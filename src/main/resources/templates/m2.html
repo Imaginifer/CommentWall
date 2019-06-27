@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Új üzenet</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+  </head>
+  <body class="httr">
+    <div class="container">
+      <div class="btnrow">
+          <ul>
+              <li><a class="hiv" href="http://localhost:8080/messaging">VISSZA</a></li>
+          </ul>
+      </div>
+      <div class="msgbox-mid">
+        <form method="POST" data-th-action="@{/messaging/new}" data-th-object="${message}">
+              <p class="usr">Név:</p>
+              <label for="username"></label><input type="text" data-th-field="*{name}"/>
+              <p class="txt" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name Error</p>
+              <p class="usr">Üzenet:</p>
+              <label for="text"></label><input id="textum" type="text" data-th-field="*{text}"/>
+              <p class="txt" th:if="${#fields.hasErrors('text')}" th:errors="*{text}">Text Error</p>
+              <div><label for="send"></label><input type="submit" value="KÜLD"/></div>
+
+        </form>
+      </div>
+      <div class="btnrow">
+        <ul>
+          <li class="usr" data-th-each="stat: ${stats}">
+            <span data-th-text = "${stat.key}"></span>
+            <span data-th-text = "${stat.value}"></span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

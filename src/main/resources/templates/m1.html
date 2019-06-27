@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html dir="ltr">
+    <head>
+        <title>Üzenetek</title>
+        <meta charset="UTF-8">
+        <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+        <link rel="stylesheet" th:href="@{/css/reset.css}">
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body class="httr">
+        <div class="container">
+            <div class="btnrow">
+                <ul>
+                    <li><a class="hiv" href="http://localhost:8080/messaging">IDENT+</a></li>
+                    <li><a class="hiv" href="http://localhost:8080/messaging?ord=6">IDENT-</a></li>
+                    <li><a class="hiv" href="http://localhost:8080/messaging?ord=1">DÁTUM+</a></li>
+                    <li><a class="hiv" href="http://localhost:8080/messaging?ord=2">DÁTUM-</a></li>
+                    <li><a class="hiv" href="http://localhost:8080/messaging?ord=3">NÉV+</a></li>
+                    <li><a class="hiv" href="http://localhost:8080/messaging?ord=4">NÉV-</a></li>
+                    <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
+                </ul>
+            </div>
+            <div id="messages">
+                <div class="msgbox" data-th-each="message: ${messages}">
+                    <p class="usr" data-th-text = "${message.username}"></p>
+                    <p class="txt"data-th-text = "${message.text}"></p>
+                    <div class="msgfooter">
+                      <p class="time" data-th-text = "${message.date}"></p>
+                      <a class="hiv" data-th-text = "${message.getMsgId()}" data-th-href="@{'/messaging/'+${message.getMsgId()}}"></a>
+                    </div>
+                </div>
+            </div>
+            <div class="msgbox">
+              <div class="newmsg">
+                <a class="hiv" href="http://localhost:8080/messaging/new">ÚJ ÜZENET</a>
+              </div>
+            </div>
+
+        </div>
+    </body>
+</html>
