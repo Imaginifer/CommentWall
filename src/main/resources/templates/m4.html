@@ -11,8 +11,40 @@
       <div class="btnrow">
           <ul>
               <li><a class="hiv" href="http://localhost:8080/messaging">VISSZA</a></li>
+              <li data-sec-authorize="isAuthenticated()">
+                <form data-th-action="@{/logout}" method="post">
+                  <input type="submit" value="KILÉP">
+                </form>
+              </li>
+              <li data-sec-authorize="!isAuthenticated()">
+                  <a class="hiv" href="http://localhost:8080/messaging/register">REGISZT.</a></li>
+              <li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>
+              <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
           </ul>
       </div>
+
+        <form method="POST" data-th-action="@{/messaging/login}" >
+            <div class="msgbox-mid">
+              <div class="searchrow">
+                <input name="username" class="searchb" type="text" placeholder="Név">
+                <input name="password" class="searchb" type="password" placeholder="Jelszó">
+              </div>
+              <p class="txt" data-th-if="${param.error}" >Hibás felhasználónév vagy jelszó!</p>
+              <!--<p class="usr">Név:</p>
+              <input name="username" type="text" />
+              <p class="txt" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Name Error</p>
+              <p class="usr">Jelszó:</p>
+              <input name="password" type="password" />
+              <p class="txt" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password Error</p>-->
+
+              </div>
+              <div class="msgbox">
+                <div class="newmsg">
+                  <input type="submit" value="KÜLD"/>
+                </div>
+              </div>
+        </form>
+
     </div>
   </body>
 </html>

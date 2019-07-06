@@ -14,6 +14,24 @@ and open the template in the editor.
     </head>
     <body class="httr">
         <div class="container">
+          <div class="btnrow">
+              <ul>
+                  <li data-sec-authorize="!isAuthenticated()" >
+                      <a class="hiv" href="http://localhost:8080/login">BELÉP</a></li>
+                  <!--<li data-sec-authorize="isAuthenticated()"><a class="hiv" href="http://localhost:8080/logout">KILÉP</a></li>-->
+                  <li data-sec-authorize="isAuthenticated()">
+                    <form data-th-action="@{/logout}" method="post">
+                      <input type="submit" value="KILÉP">
+                    </form>
+                  </li>
+                  <li data-sec-authorize="!isAuthenticated()">
+                      <a class="hiv" href="http://localhost:8080/messaging/register">REGISZT.</a></li>
+                  <li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>
+                  <li data-sec-authorize="hasRole('ADMIN')">
+                        <a class="hiv" href="http://localhost:8080/messaging/commenters">FELHASZN.</a></li>
+                  <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
+              </ul>
+          </div>
             <div class="btnrow">
                 <ul>
                     <li><a class="hiv" href="http://localhost:8080/messaging">IDENT+</a></li>
@@ -22,20 +40,28 @@ and open the template in the editor.
                     <li><a class="hiv" href="http://localhost:8080/messaging?ord=2">DÁTUM-</a></li>
                     <li><a class="hiv" href="http://localhost:8080/messaging?ord=3">NÉV+</a></li>
                     <li><a class="hiv" href="http://localhost:8080/messaging?ord=4">NÉV-</a></li>
-                    <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
+                    <li data-sec-authorize="hasRole('ADMIN')">
+                      <a class="hiv" href="http://localhost:8080/messaging?only=no">MIND</a>
+                    </li>
+                    <li data-sec-authorize="hasRole('ADMIN')">
+                      <a class="hiv" href="http://localhost:8080/messaging?only=yes">TÖRÖLT</a>
+                    </li>
                 </ul>
             </div>
-            <div id="messages">
+            <div class="messagelist">
                 <div class="msgbox" data-th-each="message: ${messages}">
                     <p class="usr" data-th-text = "${message.username}"></p>
-                    <p class="txt"data-th-text = "${message.text}"></p>
+                    <p class="txt" data-th-text = "${message.text}"></p>
                     <div class="msgfooter">
                       <p class="time" data-th-text = "${message.date}"></p>
+                      <p class="time" data-th-text = "${message.getTopic().getTitle()}"></p>
+                      <a data-sec-authorize="hasRole('ADMIN')" data-th-if="${message.deleted==false}" class="hiv" data-th-href="@{'/messaging/delete/'+${message.getMsgId()}}">TÖRÖL</a>
+                      <a data-th-if="${message.deleted==true}" class="hiv" data-th-href="@{'/messaging/restore/'+${message.getMsgId()}}">VISSZAÁLLÍT</a>
                       <a class="hiv" data-th-text = "${message.getMsgId()}" data-th-href="@{'/messaging/'+${message.getMsgId()}}"></a>
                     </div>
                 </div>
             </div>
-            <div class="msgbox">
+            <div class="msgbox" data-sec-authorize="isAuthenticated()">
               <div class="newmsg">
                 <a class="hiv" href="http://localhost:8080/messaging/new">ÚJ ÜZENET</a>
               </div>

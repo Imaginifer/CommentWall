@@ -5,10 +5,14 @@
  */
 package com.progmatic.msg.service;
 
-import com.progmatic.msg.*;
-import java.time.LocalDateTime;
+import com.progmatic.msg.entity.*;
+import com.progmatic.msg.dto.*;
+import com.progmatic.msg.repo.*;
 import java.util.*;
 import java.util.regex.*;
+import javax.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,56 +21,84 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class MsgServiceImpl {
-    private int nrId;
-    private List<Message> m;
+    //private int nrId;
+    //private final List<Message> m;
+    private CustomMsgRepoImpl msgrepo;
+    private TopicRepository topicrepo;
 
-    public MsgServiceImpl() {
-        nrId=0;
-        m=fillerMsg();
+    
+    @Autowired
+    public MsgServiceImpl(TopicRepository topicrepo, CustomMsgRepoImpl msgrepo) {
+        //nrId=0;
+        //m=fillerMsg();
+        this.topicrepo = topicrepo;
+        this.msgrepo = msgrepo;
+        
     }
 
-    public void addNew( String name, String text){
-        m.add(new Message(name, text, LocalDateTime.now(),++nrId));
+    @Transactional
+    public void addNew(String name, String text, String topicTitle, String newTopic) {
+        //m.add(new Message(name, text, LocalDateTime.now(),++nrId));
+        msgrepo.addNew(name, text, topicHandling(name, topicTitle, newTopic));
+        
     }
-    private List<Message> fillerMsg(){
-        List<Message> x = new ArrayList<>();
-        //int nrId=0;
-        x.add(new Message("Techno Kolos", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", LocalDateTime.of(2008, 11, 27, 23, 6, 54),++nrId));
-        x.add(new Message("Feles Elek", "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", LocalDateTime.of(2017, 3, 14, 2, 55, 7),++nrId));
-        x.add(new Message("Citad Ella", "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", LocalDateTime.of(1998, 6, 20, 9, 15, 9),++nrId));
-        x.add(new Message("Tank Aranka", "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",LocalDateTime.of(2011, 9, 5, 3, 43, 21),++nrId));
+
+    @Transactional
+    private Topic topicHandling(String name, String topicTitle, String newTitle) {
+        if (allTopicTitles().contains(newTitle)) {
+            topicTitle = newTitle;
+            newTitle = "";
+        }
+        if (newTitle.isEmpty()) {
+            return topicrepo.findByTitle(topicTitle);
+        }
+        return topicrepo.newTopic(name, newTitle);
+    }
+
+    public List<String> allTopicTitles() {
+        List<String> x = topicrepo.findAllTopicTitle();
         return x;
     }
-    public List<Message> getMsg(String order, String count, String name, String text){
-        return countMsg(count, orderMsg(order, findMsg(name, text)));
+
+    @Transactional
+    public List<Message> getMsg(String order, String count, String name,
+             String text, String topic, boolean allowed, String only) {
+        if (msgrepo.ifMsgListTooShort()) {
+            msgrepo.fillerMsg();
+        }
+        List<Message> m = msgrepo.getMessages();
+        return countMsg(count, orderMsg(order, findMsg(name, text,
+                 filterTopic(topic, filterDeleted(allowed, only, m)))));
+
     }
-    public List<Message> orderMsg(String order, List<Message> y){
+
+    public List<Message> orderMsg(String order, List<Message> y) {
         int q;
         List<Message> x = new ArrayList<>();
         y.forEach((Message ms) -> x.add(ms));
         try {
-            q=Integer.parseInt(order);
+            q = Integer.parseInt(order);
         } catch (NumberFormatException e) {
-            q=0;
+            q = 0;
         }
-        switch(q){
+        switch (q) {
             case 1:
-                x.sort((ms1,ms2) -> {
+                x.sort((ms1, ms2) -> {
                     return ms1.getDate().compareTo(ms2.getDate());
                 });
                 break;
             case 2:
-                x.sort((ms1,ms2) -> {
+                x.sort((ms1, ms2) -> {
                     return ms2.getDate().compareTo(ms1.getDate());
                 });
                 break;
             case 3:
-                x.sort((ms1,ms2) -> {
+                x.sort((ms1, ms2) -> {
                     return ms1.getUsername().compareTo(ms2.getUsername());
                 });
                 break;
             case 4:
-                x.sort((ms1,ms2) -> {
+                x.sort((ms1, ms2) -> {
                     return ms2.getUsername().compareTo(ms1.getUsername());
                 });
                 break;
@@ -74,80 +106,158 @@ public class MsgServiceImpl {
                 x.sort((ms1, ms2) -> {
                     return ms2.getMsgId() - ms1.getMsgId();
                 });
+                break;
             default:
                 break;
         }
         return x;
     }
-    public List<Message> countMsg(String count, List<Message> ls){
+
+    public List<Message> countMsg(String count, List<Message> ls) {
         List<Message> x = new ArrayList<>();
-        int n=0;
-        if (count.equals("full") || ls.size()<2){
+        int n = 0;
+        if (count.equals("full") || ls.size() < 2) {
             return ls;
         } else {
-            while(n<Math.max(2,ls.size()/2)){
+            while (n < Math.max(2, ls.size() / 2)) {
                 x.add(ls.get(n++));
             }
         }
-        
+
         return x;
     }
-    
-    public List<Message> pickMsg (String id){
-        int q=0;
+
+    public List<Message> pickMsg(String id) {
+        int q = 0;
         try {
-            q=Integer.parseInt(id);
+            q = Integer.parseInt(id);
         } catch (NumberFormatException e) {
-            q=0;
+            q = 0;
         }
-        int n=Math.min(m.get(m.size()-1).getMsgId(), Math.max(0, q));
+        List<Message> m = msgrepo.getMessages();
+        int n = Math.min(m.get(m.size() - 1).getMsgId(), Math.max(0, q));
         List<Message> y = new ArrayList<>();
         //y.add(x.get(0));
         for (Message message : m) {
-            if(message.getMsgId()==n){
+            if (message.getMsgId() == n) {
                 y.add(message);
                 return y;
             }
         }
         return y;
     }
-    
-    public String searchUrl(Carrier cr){
-        
-        String o=cr.getOrd();
-        if(cr.getDesc()!=null){
+
+    public String searchUrl(Carrier cr) {
+
+        String o = cr.getOrd();
+        if (cr.getDesc() != null) {
             try {
                 int k = Integer.parseInt(o) + 1;
                 o = Integer.toString(k);
             } catch (NumberFormatException e) {
             }
         }
-        String ord=!cr.getOrd().equals("")?"ord="+o:"";
-        String ct=cr.getCt()!=null?"ct=h":"";
-        String tx=!cr.getTx().equals("")?"tx="+cr.getTx():"";
-        String nm=!cr.getNm().equals("")?"nm="+cr.getNm():"";
-        String start = (cr.getOrd().equals("")
-                &&cr.getCt()==null
-                &&cr.getTx().equals("")
-                &&cr.getNm().equals(""))?"":"?";
-        String cts=ct.equals("")?"":"&";
-        return start+ord+spc(ct)+ct+spc(nm)+nm+spc(tx)+tx;
+        String ord = cr.getOrd()!=null ? "ord=" + o : "";
+        String ct = cr.getCt() != null ? "&ct=h" : "";
+        String del = cr.getDel() != null ? "&only=yes" : "";
+        String tx = !cr.getTx().equals("") ? "&tx=" + cr.getTx() : "";
+        String nm = !cr.getNm().equals("") ? "&nm=" + cr.getNm() : "";
+        String tp = !cr.getTp().equals("Bármely topik") ? "&top=" + cr.getTp() : "";
+        String start = (cr.getOrd()== null
+                && cr.getCt() == null
+                && cr.getTx().equals("")
+                && cr.getNm().equals("")
+                && cr.getTp().equals("Bármely topik")
+                && cr.getDel() == null) ? "" : "?";
+        return start + ord + ct + nm + tx + tp + del;
     }
-    private String spc (String inp){
-        return inp.equals("")?"":"&";
-    }
-    
-    public List<Message> findMsg(String name, String text){
+
+    public List<Message> findMsg(String name, String text, List<Message> in) {
         List<Message> x = new ArrayList<>();
         Pattern f1 = Pattern.compile(name);
         Pattern f2 = Pattern.compile(text);
-        m.forEach(ms -> {
+        in.forEach(ms -> {
             Matcher m1 = f1.matcher(ms.getUsername());
             Matcher m2 = f2.matcher(ms.getText());
-            if(m1.find() && m2.find()){
+            if (m1.find() && m2.find()) {
                 x.add(ms);
             }
         });
         return x;
+    }
+
+    public String hiba(String err) {
+        String[] st = {"Ismeretlen hiba",
+             "A megadott felhasználónév már foglalt, kérjük válasszon másikat!"};
+        int q = 0;
+        try {
+            q = Integer.parseInt(err);
+        } catch (NumberFormatException e) {
+        }
+        int k = Math.max(0, Math.min(st.length - 1, q));
+        return st[k];
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void deleteMsg(String del, boolean restore) {
+        int q = 0;
+        try {
+            q = Integer.parseInt(del);
+        } catch (NumberFormatException e) {
+            return;
+        }
+
+        if (q < 1 || q > msgrepo.getMessages().size()) {
+            return;
+        }
+        /*for (Message ms : m) {
+            if(!restore && ms.getMsgId() == q && !ms.isDeleted()){
+                ms.setDeleted(true);
+            }
+            if(restore && ms.getMsgId() == q && ms.isDeleted()){
+                ms.setDeleted(false);
+            }
+        }*/
+        msgrepo.hideOrRestore(q, restore);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void removeTopic(String top) {
+        topicrepo.removeTopic(top);
+    }
+
+    public List<Message> filterDeleted(boolean allowed, String only, List<Message> x) {
+        if (allowed && only.equals("no")) {
+            return x;
+        }
+        List<Message> y = new ArrayList<>();
+        x.forEach(ms -> {
+            if (only.equals("") && !ms.isDeleted()) {
+                y.add(ms);
+            } else if (allowed && only.equals("yes") && ms.isDeleted()) {
+                y.add(ms);
+            }
+
+        });
+        return y;
+    }
+
+    private List<Message> filterTopic(String topic, List<Message> x) {
+        if (topic.equals("")) {
+            return x;
+        }
+        List<Message> y = new ArrayList<>();
+        x.forEach(ms -> {
+            if (ms.getTopic().getTitle().equals(topic)) {
+                y.add(ms);
+            }
+        });
+        return y;
+    }
+    
+    public List<Topic> displayTopics(){
+        return topicrepo.displayTopics();
     }
 }

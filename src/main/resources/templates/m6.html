@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>Hiba!</title>
+    <title>Topikok</title>
     <link rel="stylesheet" th:href="@{/css/reset.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
   </head>
@@ -20,15 +20,21 @@
               </li>
               <li data-sec-authorize="!isAuthenticated()">
                   <a class="hiv" href="http://localhost:8080/messaging/register">REGISZT.</a></li>
+              <li data-sec-authorize="hasRole('ADMIN')">
+                        <a class="hiv" href="http://localhost:8080/messaging/commenters">FELHASZN.</a></li>
               <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
           </ul>
       </div>
-      <div class="msgbox-mid">
-        <div class="newmsg"> <p class="usr">Gond van</p></div>
-        <div class="newmsg"> <p class="txt" data-th-text = "${errortext}"></p></div>
-      </div>
-      <div class="msgbox">
-        <p class="txt" data-th-text = "${stacktrace}"></p>
+      <div class="messagelist">
+          <div class="msgbox" data-th-each="topic: ${topics}">
+              <p class="usr" data-th-text = "${topic.getAuthor()}"></p>
+              <p class="txt" data-th-text = "${topic.getTitle()}"></p>
+              <div class="msgfooter">
+                <p class="topicmsgs" data-th-text = "${topic.getMessages().size()}"></p>
+                <a data-sec-authorize="hasRole('ADMIN')" class="hiv" data-th-href="@{'/messaging/deltop/?top='+${topic.getTitle()}}">TÖRÖL</a>
+                <a class="hiv" data-th-text = "${topic.getTopicId()}" data-th-href="@{'/messaging?top='+${topic.title}}"></a>
+              </div>
+          </div>
       </div>
     </div>
   </body>

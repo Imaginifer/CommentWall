@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Felhasználók</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+  </head>
+  <body class="httr">
+    <div class="container">
+      <div class="btnrow">
+          <ul>
+              <li><a class="hiv" href="http://localhost:8080/messaging">VISSZA</a></li>
+              <li data-sec-authorize="isAuthenticated()">
+                <form data-th-action="@{/logout}" method="post">
+                  <input type="submit" value="KILÉP">
+                </form>
+              </li>
+              <li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>
+              <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
+          </ul>
+      </div>
+      <div class="messagelist">
+        <div class="msgbox" data-th-each="user: ${users}">
+            <p class="txt" data-th-text = "${user.username}"></p>
+            <div class="msgfooter">
+              <p class="time" data-th-text = "${user.getFormattedJoinDate()}"></p>
+              <a data-sec-authorize="hasRole('ADMIN')" data-th-if="${user.isAdmin()==false}" class="hiv" data-th-href="@{'/messaging/commenters?id='+${user.getId()}}">ELŐLÉPTET</a>
+              <a data-sec-authorize="hasRole('ADMIN')" data-th-if="${user.isAdmin()==true}" class="hiv" data-th-href="@{'/messaging/commenters?id='+${user.getId()}}">LEFOKOZ</a>
+              <p class="hiv" data-th-text = "${user.getId()}"></p>
+            </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

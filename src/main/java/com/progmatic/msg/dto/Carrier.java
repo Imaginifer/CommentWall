@@ -3,23 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.progmatic.msg;
+package com.progmatic.msg.dto;
+
+import java.util.List;
 
 /**
  *
  * @author imaginifer
  */
 public class Carrier {
-    private String nm, tx, ord, desc, ct;
+    private String nm, tx, ord, desc, ct, del, tp;
+    private List<String> topics;
 
-    public Carrier() {
-        nm="";
-        tx="";
-        ord="";
-        desc="";
-        ct="";
-    }
-    
     public String getNm() {
         return nm;
     }
@@ -59,6 +54,29 @@ public class Carrier {
     public void setCt(String ct) {
         this.ct = ct;
     }
+    public String getDel(){
+        return del;
+    }
+    public void setDel(String del){
+        this.del=del;
+    }
+
+    public String getTp() {
+        return tp;
+    }
+
+    public void setTp(String tp) {
+        this.tp = tp;
+    }
+
+    public List<String> getTopics() {
+        return topics;
+    }
+
+    public void setTopics(List<String> topics) {
+        this.topics = topics;
+    }
+
     
     
     

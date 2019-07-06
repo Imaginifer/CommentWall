@@ -3,42 +3,46 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.progmatic.msg;
+package com.progmatic.msg.service;
 
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.*;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+
 
 /**
  *
  * @author imaginifer
  */
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+@Configuration
 public class WebSecConfig extends WebSecurityConfigurerAdapter{
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.formLogin()
                 .defaultSuccessUrl("/messaging", true)
+                .loginPage("/messaging/login")
                 .permitAll()    //login oldal, amit mindenki elérhet
                 .and().logout()         //logout oldal is
+                .logoutSuccessUrl("/messaging")
                 .and().authorizeRequests()
                 .antMatchers("/messaging").permitAll()  //ide szabad a hozzáférés
-                .antMatchers("/register").permitAll()
+                .antMatchers("/messaging/register").permitAll()
+                .antMatchers("/messaging/search").permitAll()
+                .antMatchers("/messaging/topics").permitAll()
                 .antMatchers("/css/*","/js/*").permitAll()  //a static mappa nyílttá tétele, különben leesik a css
-                //.antMatchers("/messaging/search").access("hasRole('ADMIN')") // csak az admin kereshet!
+                .antMatchers("/messaging/delete").access("hasRole('ADMIN')") // csak az admin törölhet!
                 .anyRequest().authenticated(); //minden máshoz hitelesítés kell
                 
     }
     
-    @Bean
+    /*@Bean
     public UserDetailsService userDetailService(){
         InMemoryUserDetailsManager man = new InMemoryUserDetailsManager(); 
         //ez a memóriában dolgozik, mert nincs adatbázis
@@ -49,11 +53,11 @@ public class WebSecConfig extends WebSecurityConfigurerAdapter{
         
         
         return man;
-    }
+    }*/
     
-    @SuppressWarnings("deprecation")
+    //@SuppressWarnings("deprecation")
     @Bean
     public static PasswordEncoder passwordEncoder(){
-        return NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder();
     }
 }

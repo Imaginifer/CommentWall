@@ -11,6 +11,18 @@
       <div class="btnrow">
           <ul>
               <li><a class="hiv" href="http://localhost:8080/messaging">VISSZA</a></li>
+              <li data-sec-authorize="!isAuthenticated()">
+                  <a class="hiv" href="http://localhost:8080/login">BELÉP</a></li>
+              <li data-sec-authorize="isAuthenticated()">
+                <form data-th-action="@{/logout}" method="post">
+                  <input type="submit" value="KILÉP">
+                </form>
+              </li>
+              <li data-sec-authorize="!isAuthenticated()">
+                  <a class="hiv" href="http://localhost:8080/messaging/register">REGISZT.</a></li>
+              <li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>
+              <li data-sec-authorize="hasRole('ADMIN')">
+                  <a class="hiv" href="http://localhost:8080/messaging/commenters">FELHASZN.</a></li>
           </ul>
       </div>
 
@@ -38,12 +50,26 @@
                 <label class="hiv" for="DIM">FÉL</label>
                 <input type="checkbox" id="DIM" value="desc" data-th-field="*{ct}">
               </li>
+              <li data-sec-authorize="hasRole('ADMIN')">
+                <label class="hiv" for="DEL">TÖRÖLT</label>
+                <input type="checkbox" id="DEL" value="yes" data-th-field="*{del}">
+              </li>
             </ul>
           </div>
+            <div class="newmsg">
+
+                <select class="slct"  data-th-field="*{tp}">
+                    <option data-th-each="topic: ${message.topics}" data-th-text="${topic}" data-th-value="${topic}"></option>
+                </select>
+            </div>
           <div class="searchrow">
             <input class="searchb" type="text" placeholder="Névben" data-th-field="*{nm}">
             <input class="searchb" type="text" placeholder="Szövegben" data-th-field="*{tx}">
-            <input type="submit" value="Submitte">
+          </div>
+        </div>
+        <div class="msgbox">
+          <div class="newmsg">
+            <input type="submit" value="KÜLD"/>
           </div>
         </div>
       </form>
