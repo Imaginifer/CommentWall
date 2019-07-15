@@ -6,6 +6,7 @@
 package com.progmatic.msg;
 
 import com.progmatic.msg.dto.*;
+import com.progmatic.msg.entity.Message;
 import com.progmatic.msg.service.*;
 import java.util.*;
 import javax.validation.Valid;
@@ -48,17 +49,21 @@ public class ControlClass {
 
     @RequestMapping(value = "/messaging/{msgId}", method = RequestMethod.GET)
     public String displayOne(@PathVariable("msgId") String msgId, Model mod) {
-        mod.addAttribute("messages", msg.pickMsg(msgId));
+        mod.addAttribute("messages", msg.pickMsg(msgId, us.isAdmin(), true));
         return "m1";
     }
 
     @RequestMapping(value = "/messaging/new", method = RequestMethod.GET)
-    public String newMsgForm(Model mod) {
+    public String newMsgForm(@RequestParam(name = "reply", defaultValue="") String reply , Model mod) {
         MessageData ms = new MessageData();
         //User u = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         //ms.setName(u.getUsername());
         ms.setName(us.getCurrentUsername());
         ms.setTopics(msg.allTopicTitles());
+        if(!reply.isEmpty()){
+            ms.setNewTopic("@ " + reply);
+            ms.setReplied(reply);
+        }
         mod.addAttribute("message", ms);
         //mod.addAttribute("stats", us.getStats());
         //mod.addAttribute("message", new Message()); //web1.0
@@ -73,8 +78,16 @@ public class ControlClass {
         //us.setUserName(ms.getName());
         //msg.addNew(ms.getName(), ms.getText());
         //User u = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        //msg.addNew(u.getUsername(), ms.getText());  
-        msg.addNew(us.getCurrentUsername(), ms.getText(), ms.getChosenTopic(), ms.getNewTopic());
+        //msg.addNew(u.getUsername(), ms.getText());
+        System.out.println("válasz erre: "+ms.getReplied());
+        if(ms.isResponse()){
+            List<Message> x = msg.pickMsg(ms.getReplied(), us.isAdmin(), false);
+            if(!x.isEmpty()){
+                msg.newReply(us.getCurrentUsername(), ms.getText(), x.get(0));
+            }
+        } else {
+            msg.addNew(us.getCurrentUsername(), ms.getText(), ms.getChosenTopic(), ms.getNewTopic());
+        }
         return "redirect:http://localhost:8080/messaging";
     }
 
@@ -123,5 +136,11 @@ public class ControlClass {
         return "m6";
     }
     
+    @GetMapping("/messaging/{msgId}/edit")
+    public String editMessage(@PathVariable("msgId") String msgId,
+            @RequestParam(name = "tx") String tx, Model mod){
+        msg.editMessage(us.isAdmin(), msgId, tx);
+        return "redirect:http://localhost:8080/messaging";
+    }
 
 }

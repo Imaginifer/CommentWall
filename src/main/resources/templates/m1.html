@@ -51,10 +51,12 @@ and open the template in the editor.
             <div class="messagelist">
                 <div class="msgbox" data-th-each="message: ${messages}">
                     <p class="usr" data-th-text = "${message.username}"></p>
+                    <p class="cimzett" data-th-if="${message.isReply()==true}" data-th-text = "${message.getReplyTo().getMsgId()}"></p>
                     <p class="txt" data-th-text = "${message.text}"></p>
                     <div class="msgfooter">
                       <p class="time" data-th-text = "${message.date}"></p>
                       <p class="time" data-th-text = "${message.getTopic().getTitle()}"></p>
+                      <a class="hiv" data-sec-authorize="isAuthenticated()" data-th-href="@{'/messaging/new?reply='+${message.getMsgId()}}">VÁLASZ</a>
                       <a data-sec-authorize="hasRole('ADMIN')" data-th-if="${message.deleted==false}" class="hiv" data-th-href="@{'/messaging/delete/'+${message.getMsgId()}}">TÖRÖL</a>
                       <a data-th-if="${message.deleted==true}" class="hiv" data-th-href="@{'/messaging/restore/'+${message.getMsgId()}}">VISSZAÁLLÍT</a>
                       <a class="hiv" data-th-text = "${message.getMsgId()}" data-th-href="@{'/messaging/'+${message.getMsgId()}}"></a>

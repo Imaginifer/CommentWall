@@ -23,8 +23,8 @@ public class CtrAdv {
         ByteArrayOutputStream str = new ByteArrayOutputStream();
         PrintStream pr = new PrintStream(str);
         ex.printStackTrace(pr);
-        
-        mod.addAttribute("errortext", ex.getMessage());
+        mod.addAttribute("errortext", ex.getMessage()==null
+                ?"Valaki, valahol elrontott valamit":ex.getMessage());
         mod.addAttribute("stacktrace", str.toString());
         return "hiba";
     }

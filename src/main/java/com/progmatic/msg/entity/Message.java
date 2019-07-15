@@ -5,9 +5,11 @@
  */
 package com.progmatic.msg.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 
@@ -16,6 +18,10 @@ import javax.validation.constraints.*;
  * @author imaginifer
  */
 @Entity
+@NamedEntityGraphs(@NamedEntityGraph(
+    name="loadWithReplies",
+    attributeNodes= @NamedAttributeNode(value="replies")
+))
 public class Message implements Serializable{
     private String username;
     private String text;
@@ -24,8 +30,15 @@ public class Message implements Serializable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int msgId;
     private boolean deleted;
+    @JsonIgnore
     @ManyToOne(optional=false)
     private Topic topic;
+    @JsonIgnore
+    @OneToMany(mappedBy = "replyTo")
+    private List<Message> replies;
+    @JsonIgnore
+    @ManyToOne
+    private Message replyTo;
 
     /*public Message(String username, String text, LocalDateTime dt, int id) {
         this.username = username;
@@ -39,7 +52,17 @@ public class Message implements Serializable{
         this.text = text;
         this.date = dt;
         this.topic = topic;
+        this.deleted = false;
+        this.replyTo = null;
+    }
+    
+    public Message(String username, String text, LocalDateTime dt, Topic topic, Message replyTo) {
+        this.username = username;
+        this.text = text;
+        this.date = dt;
+        this.topic = topic;
         this.deleted=false;
+        this.replyTo = replyTo;
     }
 
     public Message() {
@@ -77,6 +100,23 @@ public class Message implements Serializable{
     public void setTopic(Topic topic){
         this.topic = topic;
     }
+    
+    public boolean isReply(){
+        return replyTo != null;
+    }
+    
+    public Message getReplyTo(){
+        return replyTo;
+    }
+
+    public List<Message> getReplies() {
+        return replies;
+    }
+    
+    public void editText(String text){
+        this.text = text;
+    }
+    
     
     
     

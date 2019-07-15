@@ -70,6 +70,20 @@ public class SecuController {
         return "m7";
     }
     
+    /*@GetMapping("/messaging/commenters")
+    public String displayAllUsers(Model mod){
+        mod.addAttribute("data", new Carrier());
+        mod.addAttribute("users", ub.listCommenters());
+        return "m7";
+    }
+    
+    @PostMapping("/messaging/commenters")
+    public String adminRights(@ModelAttribute("data") Carrier cr){
+        if(!cr.getTx().isEmpty()){
+            ub.promoteOrDemote(cr.getTx());
+        }
+        return "redirect:http://localhost:8080/messaging";
+    }*/
     
    
     

@@ -25,7 +25,7 @@ public class WebSecConfig extends WebSecurityConfigurerAdapter{
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.formLogin()
+        http.csrf().disable().formLogin()
                 .defaultSuccessUrl("/messaging", true)
                 .loginPage("/messaging/login")
                 .permitAll()    //login oldal, amit mindenki elérhet

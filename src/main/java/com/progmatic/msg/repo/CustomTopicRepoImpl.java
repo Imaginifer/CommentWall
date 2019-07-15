@@ -34,6 +34,7 @@ public class CustomTopicRepoImpl implements CustomTopicRepo{
         EntityGraph eg = em.getEntityGraph("loadWithMessages");
         return em.createQuery("select t from Topic t")
                 .setHint(QueryHints.HINT_LOADGRAPH, eg).getResultList();
+        //return fullTopics();
     }
     
    @Override

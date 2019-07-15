@@ -31,11 +31,11 @@
               <p class="usr">Üzenet</p>
               <label for="text"></label><input id="textum" type="text" data-th-field="*{text}"/>
               <p class="txt" th:if="${#fields.hasErrors('text')}" th:errors="*{text}">Text Error</p>
-
+              <input type="hidden" value="${message.replied}" data-th-field="*{replied}"/>
             </div>
             <div class="msgbox">
                 <div class="searchrow">
-                    <select class="slct" id="choosetp" data-th-field="*{chosenTopic}">
+                    <select data-th-if="${message.isResponse()==false}" class="slct" id="choosetp" data-th-field="*{chosenTopic}">
                         <option data-th-each="topic: ${message.topics}" data-th-text="${topic}" data-th-value="${topic}"></option>
                     </select>
                     <input class="searchb" id="newtopic" type="text" data-th-field="*{newTopic}" placeholder="Új topik címe">

@@ -10,16 +10,20 @@ import com.progmatic.msg.dto.*;
 import com.progmatic.msg.repo.*;
 import java.util.*;
 import java.util.regex.*;
-import javax.transaction.Transactional;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
+import com.progmatic.msg.annot.*;
 
 /**
  *
  * @author imaginifer
  */
 @Service
+@LogAnnot
 public class MsgServiceImpl {
     //private int nrId;
     //private final List<Message> m;
@@ -71,7 +75,8 @@ public class MsgServiceImpl {
                  filterTopic(topic, filterDeleted(allowed, only, m)))));
 
     }
-
+    
+    
     public List<Message> orderMsg(String order, List<Message> y) {
         int q;
         List<Message> x = new ArrayList<>();
@@ -127,26 +132,47 @@ public class MsgServiceImpl {
         return x;
     }
 
-    public List<Message> pickMsg(String id) {
+    public List<Message> pickMsg(String id, boolean allowed, boolean all) {
+        List<Message> y = new ArrayList<>();
+        int q = 0;
+        /*try {
+            q = Integer.parseInt(id);
+        } catch (NumberFormatException e) {
+            return y;
+        }
+        if(!msgrepo.getMessages().stream().map(m -> m.getMsgId())
+                .collect(Collectors.toList()).contains(q)){
+            return y;
+        }*/
+        try{
+            q = Integer.parseInt(id);
+            y = msgrepo.pickWithReplies(q);
+        }catch(NumberFormatException | NoSuchElementException ex){
+           throw new EntityNotFoundException("Message with "+id+" not found!");
+        }
+        
+        if(all){
+            y.addAll(y.get(0).getReplies());
+        }
+        return filterDeleted(allowed, allowed?"no":"", y);
+    }
+    @Transactional
+    public void printComments(String id){
         int q = 0;
         try {
             q = Integer.parseInt(id);
         } catch (NumberFormatException e) {
-            q = 0;
+            return;
         }
-        List<Message> m = msgrepo.getMessages();
-        int n = Math.min(m.get(m.size() - 1).getMsgId(), Math.max(0, q));
-        List<Message> y = new ArrayList<>();
-        //y.add(x.get(0));
-        for (Message message : m) {
-            if (message.getMsgId() == n) {
-                y.add(message);
-                return y;
-            }
+        Message m = msgrepo.pickWithReplies(q).get(0);
+        System.out.println("eredeti - "+m.getText());
+        try {
+            Thread.sleep(15000);
+        } catch (InterruptedException e) {
         }
-        return y;
+        Message m2 = msgrepo.pickWithReplies(q).get(0);
+        System.out.println("új - "+m2.getText());
     }
-
     public String searchUrl(Carrier cr) {
 
         String o = cr.getOrd();
@@ -199,7 +225,7 @@ public class MsgServiceImpl {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void deleteMsg(String del, boolean restore) {
         int q = 0;
         try {
@@ -208,9 +234,11 @@ public class MsgServiceImpl {
             return;
         }
 
-        if (q < 1 || q > msgrepo.getMessages().size()) {
+        if(!msgrepo.getMessages().stream().map(m -> m.getMsgId())
+                .collect(Collectors.toList()).contains(q)){
             return;
         }
+        
         /*for (Message ms : m) {
             if(!restore && ms.getMsgId() == q && !ms.isDeleted()){
                 ms.setDeleted(true);
@@ -242,6 +270,7 @@ public class MsgServiceImpl {
 
         });
         return y;
+        //return msgrepo.filterDeletedWithCrit(allowed, only);
     }
 
     private List<Message> filterTopic(String topic, List<Message> x) {
@@ -259,5 +288,18 @@ public class MsgServiceImpl {
     
     public List<Topic> displayTopics(){
         return topicrepo.displayTopics();
+    }
+    
+    @Transactional
+    public void newReply(String name, String text, Message replied){
+        System.out.println(replied);
+        msgrepo.addNewReply(name, text, replied.getTopic(), replied);
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void editMessage(boolean allowed, String ident, String text){
+        Message m = pickMsg(ident, allowed, false).get(0);
+        m.editText(text);
     }
 }

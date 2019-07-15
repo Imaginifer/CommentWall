@@ -25,6 +25,11 @@
             <p class="txt" data-th-text = "${user.username}"></p>
             <div class="msgfooter">
               <p class="time" data-th-text = "${user.getFormattedJoinDate()}"></p>
+              <!--<form data-th-object="${data}">
+                  <input type="hidden" value="${user.getId()}" data-th-field="${data.tx}">
+                  <input class="hiv" data-th-if="${user.isAdmin()==false}" type="submit" value="ELŐLÉPTET">
+                  <input class="hiv" data-th-if="${user.isAdmin()==true}" type="submit" value="LEFOKOZ">
+              </form>-->
               <a data-sec-authorize="hasRole('ADMIN')" data-th-if="${user.isAdmin()==false}" class="hiv" data-th-href="@{'/messaging/commenters?id='+${user.getId()}}">ELŐLÉPTET</a>
               <a data-sec-authorize="hasRole('ADMIN')" data-th-if="${user.isAdmin()==true}" class="hiv" data-th-href="@{'/messaging/commenters?id='+${user.getId()}}">LEFOKOZ</a>
               <p class="hiv" data-th-text = "${user.getId()}"></p>

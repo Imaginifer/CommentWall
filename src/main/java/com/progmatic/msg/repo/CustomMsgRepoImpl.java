@@ -9,6 +9,8 @@ import com.progmatic.msg.entity.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import javax.persistence.*;
+import javax.persistence.criteria.*;
+import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -51,5 +53,38 @@ public class CustomMsgRepoImpl {
     
     public void hideOrRestore(int q, boolean restore){
         em.find(Message.class, q).setDeleted(!restore);
+    }
+    
+    public void addNewReply(String name, String text, Topic topic, Message original){
+        em.persist(new Message(name, text, LocalDateTime.now(), topic, original));
+    }
+    
+    public List<Message> pickWithReplies(int id){
+        EntityGraph eg = em.getEntityGraph("loadWithReplies");
+        List<Message> x = em.createQuery("select m from Message m where m.msgId = :i")
+                .setParameter("i", id)
+                .setHint(QueryHints.HINT_LOADGRAPH, eg).getResultList();
+        //x.addAll(x.get(0).getReplies());
+        return x;
+    }
+    
+    public List<Message> filterDeletedWithCrit(boolean allowed, String only){
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Message> cq = cb.createQuery(Message.class);
+        Root<Message> ms = cq.from(Message.class);
+        if(allowed && only.equals("yes")){
+            cq.select(ms).where(cb.equal(ms.get(Message_.deleted), true));
+            return em.createQuery(cq).getResultList();
+        }else if (allowed && only.equals("no")){
+            cq.select(ms);
+            return em.createQuery(cq).getResultList();
+        }else{
+            cq.select(ms).where(cb.equal(ms.get(Message_.deleted), false));
+            return em.createQuery(cq).getResultList();
+        }
+    }
+    
+    public void editMessage(String ident, String text){
+        
     }
 }

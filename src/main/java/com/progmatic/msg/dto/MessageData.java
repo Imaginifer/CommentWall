@@ -23,6 +23,7 @@ public class MessageData {
     private List<String> topics=new ArrayList<>();
     private String chosenTopic;
     private String newTopic;
+    private String replied = "";
 
     public String getName() {
         return name;
@@ -63,6 +64,19 @@ public class MessageData {
     public void setTopics(List<String> topics){
         this.topics=topics;
     }
+
+    public String getReplied() {
+        return replied;
+    }
+
+    public void setReplied(String replied) {
+        this.replied = replied;
+    }
+    
+    public boolean isResponse(){
+        return !replied.isEmpty();
+    }
+    
     
    
     

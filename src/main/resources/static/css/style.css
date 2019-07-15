@@ -151,3 +151,17 @@ input[type=submit]{
   margin-top: 0px;
   margin-bottom: 0px;
 }
+
+.cimzett{
+  color:white;
+  display: block;
+  font-family: serif;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
+  line-height: 150%;
+}
+.cimzett::before{
+    content: '@ '
+}

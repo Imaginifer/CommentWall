@@ -10,6 +10,7 @@ import com.progmatic.msg.dto.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import javax.persistence.*;
+import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -74,6 +75,15 @@ public class UserBase implements UserDetailsService{
                 .getResultList().isEmpty();
     }
     
+    private boolean absentAdmin(){
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Commenter> cq = cb.createQuery(Commenter.class);
+        Root<Commenter> com = cq.from(Commenter.class);
+        SetJoin<Commenter, Permit> permits = com.join(Commenter_.authorities);
+        cq.select(com).where(cb.equal(permits.get(Permit_.authority), "ROLE_ADMIN"));
+        return em.createQuery(cq).getResultList().isEmpty();
+    }
+    
     @Transactional
     public void addAdmin(boolean must){
         if(must){
@@ -87,6 +97,7 @@ public class UserBase implements UserDetailsService{
         return em.createQuery("select c from Commenter c where c.username != :n")
                 .setParameter("n", "admin").getResultList();
     }
+    
     
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
