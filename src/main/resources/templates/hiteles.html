@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Hiba!</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+  </head>
+  <body class="httr">
+    <div class="container">
+      <div class="btnrow">
+          <ul>
+              <li><a class="hiv" href="http://localhost:8080/messaging">VISSZA</a></li>
+              <li data-sec-authorize="!isAuthenticated()">
+                  <a class="hiv" href="http://localhost:8080/login">BELÉP</a></li>
+              <li data-sec-authorize="isAuthenticated()">
+                <form data-th-action="@{/logout}" method="post">
+                  <input type="submit" value="KILÉP">
+                </form>
+              </li>
+              <li data-sec-authorize="!isAuthenticated()">
+                  <a class="hiv" href="http://localhost:8080/messaging/register">REGISZT.</a></li>
+              <li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>
+              <li data-sec-authorize="hasRole('ADMIN')">
+                        <a class="hiv" href="http://localhost:8080/messaging/commenters">FELHASZN.</a></li>
+              <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
+          </ul>
+      </div>
+      <div class="msgbox-mid">
+        <div class="newmsg"> <p class="usr">Üzenet</p></div>
+        <div class="newmsg"> <p class="txt"></p>Új felhasználói fiókjának hitelesítése sikeres volt!</div>
+      </div>
+      
+    </div>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.imaginifer.mess.dto;
+
+/**
+ *
+ * @author imaginifer
+ */
+public class CommenterView {
+    private int id;
+    private boolean admin;
+    private String formattedJoinDate;
+
+    public CommenterView(int id, boolean admin, String formattedJoinDate) {
+        this.id = id;
+        this.admin = admin;
+        this.formattedJoinDate = formattedJoinDate;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
+    }
+
+    public String getFormattedJoinDate() {
+        return formattedJoinDate;
+    }
+
+    public void setFormattedJoinDate(String formattedJoinDate) {
+        this.formattedJoinDate = formattedJoinDate;
+    }
+    
+    
+}

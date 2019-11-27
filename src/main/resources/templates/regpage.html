@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Regisztáció</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+  </head>
+  <body class="httr">
+    <div class="container">
+      <div class="btnrow">
+          <ul>
+              <li><a class="hiv" href="http://localhost:8080/messaging">VISSZA</a></li>
+              <li data-sec-authorize="!isAuthenticated()">
+                  <a class="hiv" href="http://localhost:8080/login">BELÉP</a></li>
+              <li data-sec-authorize="isAuthenticated()">
+                <form data-th-action="@{/logout}" method="post">
+                  <input type="submit" value="KILÉP">
+                </form>
+              </li>
+              <li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>
+              <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
+          </ul>
+      </div>
+
+      <form method="POST" data-th-action="@{/messaging/register}" data-th-object="${data}">
+        <div class="msgbox-mid">
+          <div class="searchrow">
+            <input class="searchb" type="text" placeholder="Név" data-th-field="*{name}">
+            <input class="searchb" type="password" placeholder="Jelszó" data-th-field="*{pwd1}">
+          </div>
+          <section class="msgfooter">
+            <p class="txt" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name Error</p>
+            <p class="txt" th:if="${#fields.hasErrors('pwd1')}" th:errors="*{pwd1}">Password Error</p>
+          </section>
+
+          <div class="searchrow">
+            <input class="searchb" type="email" placeholder="Drótposta-cím" data-th-field="*{mail}">
+            <input class="searchb" type="password" placeholder="Jelszó, újra" data-th-field="*{pwd2}">
+          </div>
+          <section class="msgfooter">
+            <p class="txt" th:if="${#fields.hasErrors('mail')}" th:errors="*{mail}">Email Error</p>
+            <p class="txt" th:if="${#fields.hasErrors('pwd2')}" th:errors="*{pwd2}">Password Error</p>
+          </section>
+          <section class="msgfooter">
+            <!--<p class="txt" >A megadott címére hitelesítő üzenetet fog kapni, kattintson az ebben található hivatkozásra, és beléphet új fiókjával!</p>-->
+          </section>
+
+
+        </div>
+        <div class="msgbox">
+          <div class="newmsg">
+            <input type="submit" value="KÜLD"/>
+          </div>
+        </div>
+      </form>
+
+
+    </div>
+  </body>
+</html>
