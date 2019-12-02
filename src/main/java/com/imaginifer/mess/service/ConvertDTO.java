@@ -41,7 +41,7 @@ public class ConvertDTO {
     public static List<CommenterView> convertCommenter(List<Commenter> x){
         List<CommenterView> view = new ArrayList<>();
         for (Commenter c : x) {
-            view.add(new CommenterView(c.getId(), c.isAdmin()
+            view.add(new CommenterView(c.getUsername(), c.getId(), c.isAdmin()
                     , c.getFormattedJoinDate()));
         }
         return view;

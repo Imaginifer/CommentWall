@@ -71,7 +71,7 @@ public class MsgServiceImpl {
     @Transactional
     public List<MessageView> getMsg(String order, String count, String name,
              String text, String topic, boolean allowed, String only) {
-        if (msgrepo.ifMsgListTooShort()) {
+        if (msgrepo.msgListTooShort()) {
             msgrepo.fillerMsg();
         }
         List<Message> m = msgrepo.getMessages();

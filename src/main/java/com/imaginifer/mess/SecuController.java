@@ -7,6 +7,7 @@ package com.imaginifer.mess;
 
 import com.imaginifer.mess.dto.RegData;
 import com.imaginifer.mess.repo.UserBase;
+import com.imaginifer.mess.service.CommenterService;
 import com.imaginifer.mess.service.ConvertDTO;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +24,16 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class SecuController {
     
-    private UserBase ub;
+    private CommenterService cs;
     
     @Autowired
-    public SecuController(UserBase ub) {
-        this.ub = ub;
+    public SecuController(CommenterService cs) {
+        this.cs = cs;
     }
     
     @RequestMapping(value="/messaging/login",method=RequestMethod.GET)
     public String loginScreen(){
-        ub.addAdmin(ub.noAdmin());
+        cs.addAdmin();
         return "signin.html";
     }
     
@@ -49,14 +50,17 @@ public class SecuController {
         if(bs.hasErrors()){
             return "regpage.html";
         }
-        if(ub.nameOccupied(reg.getName())){
+        int q = cs.registerNew(reg);
+        if(q != 0){
+            return "redirect:http://localhost:8080/messaging/problem?err=" + q;
+        }
+        /*if(cs.nameOccupied(reg.getName())){
             return "redirect:http://localhost:8080/messaging/problem?err=1";
         }
         if(!reg.getPwd1().equals(reg.getPwd2())){
             return "redirect:http://localhost:8080/messaging/problem?err=2";
         }
-        
-        ub.registerNew(reg);
+        cs.registerNew(reg);*/
         return "redirect:http://localhost:8080/messaging/login";
     }
     
@@ -64,9 +68,9 @@ public class SecuController {
     public String displayAllUsers(
             @RequestParam(name = "id", defaultValue = "") String id, Model mod){
         if(!id.isEmpty()){
-            ub.promoteOrDemote(id);
+            cs.promoteOrDemote(id);
         }
-        mod.addAttribute("users", ConvertDTO.convertCommenter(ub.listCommenters()));
+        mod.addAttribute("users", ConvertDTO.convertCommenter(cs.listCommenters()));
         return "userlist.html";
     }
     

@@ -7,18 +7,12 @@ package com.imaginifer.mess.repo;
 
 import com.imaginifer.mess.entity.Commenter;
 import com.imaginifer.mess.entity.Permit;
-import com.imaginifer.mess.dto.RegData;
 //import com.imaginifer.mess.entity.Commenter_;
 //import com.imaginifer.mess.entity.Permit_;
-import java.time.LocalDateTime;
 import java.util.*;
 import javax.persistence.*;
 //import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.*;
-import org.springframework.security.crypto.password.*;
 import org.springframework.stereotype.Component;
 
 /**
@@ -31,23 +25,20 @@ public class UserBase implements UserDetailsService{
     @PersistenceContext
     EntityManager em;
     
-    private PasswordEncoder pwd;
     
-    @Autowired
-    public UserBase(PasswordEncoder pwd) {
-        this.pwd = pwd;
+    
+    public void addNewPermit(Permit p){
+        em.persist(p);
     }
     
-    @Transactional
-    private Permit getPermit(String name){
-        if(em.createQuery("select p from Permit p").getResultList().isEmpty()){
-            em.persist(new Permit("ROLE_ADMIN"));
-            em.persist(new Permit("ROLE_USER"));
-        }
+    public boolean noPermits(){
+        return em.createQuery("select p from Permit p").getResultList().isEmpty();
+    }
+    
+    public Permit getPermitByName(String name){
         return (Permit)em.createQuery("select p from Permit p where p.authority = :a")
                 .setParameter("a", name).getSingleResult();
     }
-    
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -60,11 +51,14 @@ public class UserBase implements UserDetailsService{
                 .setParameter("nm", username).getResultList().isEmpty();
     }
     
-    @Transactional
-    public void registerNew(RegData reg){
-        em.persist(new Commenter(reg.getName(), pwd.encode(reg.getPwd1()), reg.getMail()
-                , LocalDateTime.now(),getPermit("ROLE_USER")));
+    public void registerNew(Commenter c){
         
+        em.persist(c);
+    
+    }
+    
+    public Commenter findCommenterById(int id){
+        return (Commenter) em.find(Commenter.class, id);
     }
     
     
@@ -85,37 +79,14 @@ public class UserBase implements UserDetailsService{
         return em.createQuery(cq).getResultList().isEmpty();
     }*/
     
-    @Transactional
-    public void addAdmin(boolean must){
-        if(must){
-            em.persist(new Commenter("admin",pwd.encode("pa ss wo rd 12 34"),""
-                    ,LocalDateTime.of(1980, 1, 1, 9, 15),getPermit("ROLE_ADMIN")));
-        }
-    }
     
-    @PreAuthorize("hasRole('ADMIN')")
+    
     public List<Commenter> listCommenters(){
         return em.createQuery("select c from Commenter c where c.username != :n")
                 .setParameter("n", "admin").getResultList();
     }
     
     
-    @PreAuthorize("hasRole('ADMIN')")
-    @Transactional
-    public void promoteOrDemote(String id){
-        int q=0;
-        try {
-            q=Integer.parseInt(id);
-        } catch (NumberFormatException e) {
-            return;
-        }
-        Commenter c=em.find(Commenter.class, q);
-        if(c.isAdmin()){
-            c.removeAuthority(getPermit("ROLE_ADMIN"));
-        }else{
-            c.grantAuthority(getPermit("ROLE_ADMIN"));
-        }
-        
-    }
+    
     
 }

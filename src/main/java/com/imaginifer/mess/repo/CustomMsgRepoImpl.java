@@ -30,7 +30,7 @@ public class CustomMsgRepoImpl {
         em.persist(new Message(name, text, LocalDateTime.now(), topic));
     }
     
-    public boolean ifMsgListTooShort(){
+    public boolean msgListTooShort(){
         return em.createQuery("select ms from Message ms").getResultList().size() < 4;
     }
     

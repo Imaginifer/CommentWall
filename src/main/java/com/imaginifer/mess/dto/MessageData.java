@@ -15,7 +15,7 @@ import javax.validation.constraints.Size;
  */
 public class MessageData {
     
-    @NotNull
+    @NotNull(message="Több betű kell!")
     @Size(min=1, message="Több betű kell!")
     private String text;
     private List<String> topics=new ArrayList<>();

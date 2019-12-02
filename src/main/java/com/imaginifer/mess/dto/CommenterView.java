@@ -10,11 +10,13 @@ package com.imaginifer.mess.dto;
  * @author imaginifer
  */
 public class CommenterView {
+    private String username;
     private int id;
     private boolean admin;
     private String formattedJoinDate;
 
-    public CommenterView(int id, boolean admin, String formattedJoinDate) {
+    public CommenterView(String username, int id, boolean admin, String formattedJoinDate) {
+        this.username = username;
         this.id = id;
         this.admin = admin;
         this.formattedJoinDate = formattedJoinDate;
@@ -43,6 +45,16 @@ public class CommenterView {
     public void setFormattedJoinDate(String formattedJoinDate) {
         this.formattedJoinDate = formattedJoinDate;
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    
+    
     
     
 }
