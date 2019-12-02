@@ -13,6 +13,7 @@ import com.imaginifer.mess.entity.Message;
 import com.imaginifer.mess.dto.Carrier;
 import com.imaginifer.mess.dto.TopicView;
 import com.imaginifer.mess.dto.MessageView;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.*;
 import java.util.stream.Collectors;
@@ -47,13 +48,15 @@ public class MsgServiceImpl {
     @Transactional
     public void addNew(String text, String topicTitle, String newTopic) {
         String name = getCurrentUsername();
-        msgrepo.addNew(name, text, topicHandling(name, topicTitle, newTopic));
+        msgrepo.addNew(new Message(name, text, LocalDateTime.now(),
+                topicHandling(name, topicTitle, newTopic)));
+        //msgrepo.addNew(name, text, topicHandling(name, topicTitle, newTopic));
         
     }
 
     @Transactional
     private Topic topicHandling(String name, String topicTitle, String newTitle) {
-        if (allTopicTitles().contains(newTitle)) {
+        if (!newTitle.isEmpty() && allTopicTitles().contains(newTitle)) {
             topicTitle = newTitle;
             newTitle = "";
         }
@@ -72,16 +75,40 @@ public class MsgServiceImpl {
     public List<MessageView> getMsg(String order, String count, String name,
              String text, String topic, boolean allowed, String only) {
         if (msgrepo.msgListTooShort()) {
-            msgrepo.fillerMsg();
+            fillerMessages();
         }
-        List<Message> m = msgrepo.getMessages();
+        /*List<Message> m = msgrepo.getMessages();
         return ConvertDTO.convertMessage(countMsg(count, orderMsg(order, findMsg(name, text,
-                 filterTopic(topic, filterDeleted(allowed, only, m))))));
+                 filterTopic(topic, filterDeleted(allowed, only, m))))));*/
+        int ord = 0;
+        try {
+            ord = Integer.parseInt(order);
+        } catch (NumberFormatException e) {
+        }
+        return ConvertDTO.convertMessage(countMsg(count, filterDeleted(allowed, only,
+                msgrepo.filterMessages(ord, name, text, topic))));
 
     }
     
+    @Transactional
+    private void fillerMessages(){
+        Topic t = topicrepo.newTopic("admin", "Filler");
+        msgrepo.addNew(new Message("Techno Kolos", "Lorem ipsum dolor sit amet, consectetur "
+                + "adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                LocalDateTime.of(2008, 11, 27, 23, 6, 54), t));
+        msgrepo.addNew(new Message("Feles Elek", "Ut enim ad minim veniam, quis nostrud "
+                + "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", 
+                LocalDateTime.of(2017, 3, 14, 2, 55, 7), t));
+        msgrepo.addNew(new Message("Citad Ella", "Duis aute irure dolor in reprehenderit "
+                + "in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", 
+                LocalDateTime.of(1998, 6, 20, 9, 15, 9), t));
+        msgrepo.addNew(new Message("Tank Aranka", "Excepteur sint occaecat cupidatat non "
+                + "proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 
+                LocalDateTime.of(2011, 9, 5, 3, 43, 21), t));
+    }
     
-    public List<Message> orderMsg(String order, List<Message> y) {
+    
+    /*public List<Message> orderMsg(String order, List<Message> y) {
         int q;
         List<Message> x = new ArrayList<>();
         y.forEach((Message ms) -> x.add(ms));
@@ -123,7 +150,7 @@ public class MsgServiceImpl {
                 break;
         }
         return x;
-    }
+    }*/
 
     public List<Message> countMsg(String count, List<Message> ls) {
         List<Message> x = new ArrayList<>();
@@ -142,15 +169,7 @@ public class MsgServiceImpl {
     public List<MessageView> pickMsg(String id, boolean allowed, boolean all) {
         List<Message> y = new ArrayList<>();
         int q = 0;
-        /*try {
-            q = Integer.parseInt(id);
-        } catch (NumberFormatException e) {
-            return y;
-        }
-        if(!msgrepo.getMessages().stream().map(m -> m.getMsgId())
-                .collect(Collectors.toList()).contains(q)){
-            return y;
-        }*/
+        
         try{
             q = Integer.parseInt(id);
             y = msgrepo.pickWithReplies(q);
@@ -206,7 +225,7 @@ public class MsgServiceImpl {
         return start + ord + ct + nm + tx + tp + del;
     }
 
-    public List<Message> findMsg(String name, String text, List<Message> in) {
+    /*public List<Message> findMsg(String name, String text, List<Message> in) {
         List<Message> x = new ArrayList<>();
         Pattern f1 = Pattern.compile(name);
         Pattern f2 = Pattern.compile(text);
@@ -218,7 +237,7 @@ public class MsgServiceImpl {
             }
         });
         return x;
-    }
+    }*/
 
     public String hiba(String err) {
         String[] st = {"Ismeretlen hiba",
@@ -243,12 +262,11 @@ public class MsgServiceImpl {
             return;
         }
 
-        if(!msgrepo.getMessages().stream().map(m -> m.getMsgId())
-                .collect(Collectors.toList()).contains(q)){
-            return;
+        try{
+            msgrepo.hideOrRestore(q, restore);
+        }catch(NoSuchElementException ex){
+            throw new EntityNotFoundException("Message with "+q+" not found!");
         }
-        
-        msgrepo.hideOrRestore(q, restore);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -261,7 +279,11 @@ public class MsgServiceImpl {
         if (allowed && only.equals("no")) {
             return x;
         }
-        List<Message> y = new ArrayList<>();
+        if (allowed && only.equals("yes")){
+            return x.stream().filter(m -> m.isDeleted()).collect(Collectors.toList());
+        }
+        
+        /*List<Message> y = new ArrayList<>();
         x.forEach(ms -> {
             if (only.equals("") && !ms.isDeleted()) {
                 y.add(ms);
@@ -270,8 +292,8 @@ public class MsgServiceImpl {
             }
 
         });
-        return y;
-        
+        return y;*/
+        return x.stream().filter(m -> !m.isDeleted()).collect(Collectors.toList());
     }
 
     private List<Message> filterTopic(String topic, List<Message> x) {

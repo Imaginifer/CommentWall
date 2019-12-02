@@ -9,7 +9,6 @@ import com.imaginifer.mess.service.MsgServiceImpl;
 import com.imaginifer.mess.dto.Carrier;
 import com.imaginifer.mess.dto.MessageView;
 import com.imaginifer.mess.dto.MessageData;
-import com.imaginifer.mess.entity.Message;
 import java.util.*;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

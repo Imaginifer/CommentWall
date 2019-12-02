@@ -7,11 +7,12 @@ package com.imaginifer.mess.repo;
 
 import com.imaginifer.mess.entity.Topic;
 import com.imaginifer.mess.entity.Message;
-//import com.imaginifer.mess.entity.Message_;
+import com.imaginifer.mess.entity.Message_;
+import com.imaginifer.mess.entity.Topic_;
 import java.time.LocalDateTime;
 import java.util.*;
 import javax.persistence.*;
-//import javax.persistence.criteria.*;
+import javax.persistence.criteria.*;
 import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Repository;
 
@@ -25,16 +26,16 @@ public class CustomMsgRepoImpl {
     @PersistenceContext
     EntityManager em;
     
-    public void addNew(String name, String text, Topic topic){
-        System.out.println(text + "repo");
-        em.persist(new Message(name, text, LocalDateTime.now(), topic));
+    public void addNew(Message m){
+        //System.out.println(text + "repo");
+        em.persist(m);
     }
     
     public boolean msgListTooShort(){
         return em.createQuery("select ms from Message ms").getResultList().size() < 4;
     }
     
-    public List<Message> fillerMsg() {
+    /*public List<Message> fillerMsg() {
         List<Message> x = new ArrayList<>();
         Topic t = new Topic("admin", "Filler");
         em.persist(t);
@@ -47,7 +48,7 @@ public class CustomMsgRepoImpl {
         em.persist(new Message("Tank Aranka", "Excepteur sint occaecat cupidatat non "
                 + "proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", LocalDateTime.of(2011, 9, 5, 3, 43, 21), t));
         return x;
-    }
+    }*/
     
     public List<Message> getMessages(){
         return em.createQuery("select ms from Message ms").getResultList();
@@ -87,6 +88,53 @@ public class CustomMsgRepoImpl {
     
     public Message getMessageById(int id){
         return em.find(Message.class, id);
+    }
+    
+    public List<Message> filterMessages(int order, String name, String text, String topic){
+        
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Message> cq = cb.createQuery(Message.class);
+        Root<Message> ms = cq.from(Message.class);
+        
+        List<Predicate> pred = new ArrayList<>();
+        
+        if(!name.isEmpty()){
+            Predicate p = cb.like(ms.get(Message_.username), "%" + name + "%");
+            pred.add(p);
+        }
+        if(!text.isEmpty()){
+            Predicate p = cb.like(ms.get(Message_.text), "%" + text + "%");
+            pred.add(p);
+        }
+        if(!topic.isEmpty()){
+            Predicate p = cb.equal(ms.get(Message_.topic).get(Topic_.title), topic);
+            pred.add(p);
+        }
+        
+        cq.select(ms).distinct(true).where(pred.toArray(new Predicate[pred.size()]));
+        
+        switch(order){
+            case 1:
+                cq.orderBy(cb.asc(ms.get(Message_.date)));
+                break;
+            case 2:
+                cq.orderBy(cb.desc(ms.get(Message_.date)));
+                break;
+            case 3:
+                cq.orderBy(cb.asc(ms.get(Message_.username)));
+                break;
+            case 4:
+                cq.orderBy(cb.desc(ms.get(Message_.username)));
+                break;
+            case 6:
+                cq.orderBy(cb.desc(ms.get(Message_.msgId)));
+                break;
+            default:
+                cq.orderBy(cb.asc(ms.get(Message_.msgId)));
+                break;
+        }
+        
+        return em.createQuery(cq).getResultList();
     }
     
     
