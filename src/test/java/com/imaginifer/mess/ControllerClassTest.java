@@ -5,7 +5,7 @@
  */
 package com.imaginifer.mess;
 
-import com.imaginifer.mess.ControllerClass;
+import com.imaginifer.mess.controller.ControllerClass;
 import com.imaginifer.mess.dto.MessageData;
 import com.imaginifer.mess.dto.MessageView;
 import com.imaginifer.mess.service.MsgServiceImpl;

@@ -6,6 +6,7 @@
 package com.imaginifer.mess.repo;
 
 import com.imaginifer.mess.entity.Commenter;
+import com.imaginifer.mess.entity.Pass;
 import com.imaginifer.mess.entity.Permit;
 //import com.imaginifer.mess.entity.Commenter_;
 //import com.imaginifer.mess.entity.Permit_;
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Component;
 public class UserBase implements UserDetailsService{
     
     @PersistenceContext
-    EntityManager em;
+    private EntityManager em;
     
     
     
@@ -52,15 +53,21 @@ public class UserBase implements UserDetailsService{
     }
     
     public void registerNew(Commenter c){
-        
         em.persist(c);
-    
     }
     
     public Commenter findCommenterById(int id){
         return (Commenter) em.find(Commenter.class, id);
     }
     
+    public List<Commenter> getUnactivatedCommenters(){
+        return em.createQuery("select c from Commenter c where c.activated = false")
+                .getResultList();
+    }
+    
+    public void deleteAccount(Commenter c){
+        em.remove(c);
+    }
     
     public boolean noAdmin(){
         
@@ -82,11 +89,24 @@ public class UserBase implements UserDetailsService{
     
     
     public List<Commenter> listCommenters(){
-        return em.createQuery("select c from Commenter c where c.username != :n")
+        return em.createQuery("select c from Commenter c where c.username != :n "
+                + "and c.activated = true")
                 .setParameter("n", "admin").getResultList();
     }
     
+    public void newPass(Pass pass){
+        em.persist(pass);
+    }
     
+    public Pass findPassById(int id){
+        return (Pass) em.find(Pass.class, id);
+    }
     
+    public void deletePass(Pass pass){
+        em.remove(pass);
+    }
     
+    public List<Pass> getAllPasses(){
+        return em.createQuery("select p from Pass p").getResultList();
+    }
 }

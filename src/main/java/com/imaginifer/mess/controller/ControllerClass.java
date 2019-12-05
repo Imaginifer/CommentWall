@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.imaginifer.mess;
+package com.imaginifer.mess.controller;
 
 import com.imaginifer.mess.service.MsgServiceImpl;
 import com.imaginifer.mess.dto.Carrier;
@@ -125,6 +125,12 @@ public class ControllerClass {
     public String displayAllTopics(Model mod){
         mod.addAttribute("topics", msg.displayTopics());
         return "topics.html";
+    }
+    
+    @GetMapping("/messaging/ms")
+    public String systemReply(@RequestParam(name = "n", defaultValue = "0") String n, Model mod){
+        mod.addAttribute("reply", msg.responseMsg(n));
+        return "msg.html";
     }
     
     

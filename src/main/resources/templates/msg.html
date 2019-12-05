@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>Hiba!</title>
+    <title>Üzenet</title>
     <link rel="stylesheet" th:href="@{/css/reset.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
   </head>
@@ -28,7 +28,7 @@
       </div>
       <div class="msgbox-mid">
         <div class="newmsg"> <p class="usr">Üzenet</p></div>
-        <div class="newmsg"> <p class="txt"></p>Új felhasználói fiókjának hitelesítése sikeres volt!</div>
+        <div class="newmsg"> <p class="txt"  data-th-text = "${reply}"></p></div>
       </div>
       
     </div>

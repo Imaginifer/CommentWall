@@ -36,6 +36,7 @@ public class WebSecConfig extends WebSecurityConfigurerAdapter{
                 .antMatchers("/messaging/register").permitAll()
                 .antMatchers("/messaging/search").permitAll()
                 .antMatchers("/messaging/topics").permitAll()
+                .antMatchers("/messaging/problem", "/messaging/valid").permitAll()
                 .antMatchers("/css/*","/js/*").permitAll() 
                 .antMatchers("/messaging/delete").access("hasRole('ADMIN')") 
                 .anyRequest().authenticated(); 

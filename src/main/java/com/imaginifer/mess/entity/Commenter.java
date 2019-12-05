@@ -58,7 +58,6 @@ public class Commenter implements UserDetails, Serializable{
         this.joinDate = date;
         this.resetDate = date;
         authorities = new HashSet<>();
-        
     }
 
     
@@ -120,6 +119,7 @@ public class Commenter implements UserDetails, Serializable{
     public void grantAuthority (Permit role){
         authorities.add(role);
         activated = true;
+        enabled = true;
     }
     
     public void removeAuthority (Permit role){

@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.imaginifer.mess;
+package com.imaginifer.mess.controller;
 
 import com.imaginifer.mess.dto.RegData;
-import com.imaginifer.mess.repo.UserBase;
 import com.imaginifer.mess.service.CommenterService;
 import com.imaginifer.mess.service.ConvertDTO;
+import com.imaginifer.mess.service.MailingService;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,16 +24,18 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class SecuController {
     
-    private CommenterService cs;
+    private final CommenterService cs;
+    private MailingService ms;
     
     @Autowired
-    public SecuController(CommenterService cs) {
+    public SecuController(CommenterService cs, MailingService ms) {
         this.cs = cs;
+        this.ms = ms;
     }
     
     @RequestMapping(value="/messaging/login",method=RequestMethod.GET)
     public String loginScreen(){
-        cs.addAdmin();
+        //cs.addAdmin();
         return "signin.html";
     }
     
@@ -51,17 +53,11 @@ public class SecuController {
             return "regpage.html";
         }
         int q = cs.registerNew(reg);
-        if(q != 0){
+        if(q > 0){
             return "redirect:http://localhost:8080/messaging/problem?err=" + q;
         }
-        /*if(cs.nameOccupied(reg.getName())){
-            return "redirect:http://localhost:8080/messaging/problem?err=1";
-        }
-        if(!reg.getPwd1().equals(reg.getPwd2())){
-            return "redirect:http://localhost:8080/messaging/problem?err=2";
-        }
-        cs.registerNew(reg);*/
-        return "redirect:http://localhost:8080/messaging/login";
+        
+        return "redirect:http://localhost:8080/messaging/ms?n=1";
     }
     
     @GetMapping("/messaging/commenters")
@@ -76,7 +72,16 @@ public class SecuController {
     
     @GetMapping("/messaging/valid")
     public String validateNew(@RequestParam(name = "n", defaultValue = "0") String n){
-        return "hiteles.html";
+        if (cs.validateCommenter(n)){
+            return "redirect:http://localhost:8080/messaging/ms?n=2";
+        }
+        return "redirect:http://localhost:8080/messaging/problem?err=3";
+    }
+    
+    @GetMapping("/messaging/sendtestmail")
+    public String sendTestMail(){
+        ms.sendSimpleTestMail();
+        return "redirect:http://localhost:8080/messaging/";
     }
     
    

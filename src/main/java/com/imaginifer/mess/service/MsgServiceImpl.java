@@ -50,7 +50,6 @@ public class MsgServiceImpl {
         String name = getCurrentUsername();
         msgrepo.addNew(new Message(name, text, LocalDateTime.now(),
                 topicHandling(name, topicTitle, newTopic)));
-        //msgrepo.addNew(name, text, topicHandling(name, topicTitle, newTopic));
         
     }
 
@@ -74,12 +73,7 @@ public class MsgServiceImpl {
     @Transactional
     public List<MessageView> getMsg(String order, String count, String name,
              String text, String topic, boolean allowed, String only) {
-        if (msgrepo.msgListTooShort()) {
-            fillerMessages();
-        }
-        /*List<Message> m = msgrepo.getMessages();
-        return ConvertDTO.convertMessage(countMsg(count, orderMsg(order, findMsg(name, text,
-                 filterTopic(topic, filterDeleted(allowed, only, m))))));*/
+        
         int ord = 0;
         try {
             ord = Integer.parseInt(order);
@@ -90,68 +84,7 @@ public class MsgServiceImpl {
 
     }
     
-    @Transactional
-    private void fillerMessages(){
-        Topic t = topicrepo.newTopic("admin", "Filler");
-        msgrepo.addNew(new Message("Techno Kolos", "Lorem ipsum dolor sit amet, consectetur "
-                + "adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                LocalDateTime.of(2008, 11, 27, 23, 6, 54), t));
-        msgrepo.addNew(new Message("Feles Elek", "Ut enim ad minim veniam, quis nostrud "
-                + "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", 
-                LocalDateTime.of(2017, 3, 14, 2, 55, 7), t));
-        msgrepo.addNew(new Message("Citad Ella", "Duis aute irure dolor in reprehenderit "
-                + "in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", 
-                LocalDateTime.of(1998, 6, 20, 9, 15, 9), t));
-        msgrepo.addNew(new Message("Tank Aranka", "Excepteur sint occaecat cupidatat non "
-                + "proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 
-                LocalDateTime.of(2011, 9, 5, 3, 43, 21), t));
-    }
     
-    
-    /*public List<Message> orderMsg(String order, List<Message> y) {
-        int q;
-        List<Message> x = new ArrayList<>();
-        y.forEach((Message ms) -> x.add(ms));
-        try {
-            q = Integer.parseInt(order);
-        } catch (NumberFormatException e) {
-            q = 0;
-        }
-        switch (q) {
-            case 1:
-                x.sort((ms1, ms2) -> {
-                    return ms1.getDate().compareTo(ms2.getDate());
-                });
-                break;
-            case 2:
-                x.sort((ms1, ms2) -> {
-                    return ms2.getDate().compareTo(ms1.getDate());
-                });
-                break;
-            case 3:
-                x.sort((ms1, ms2) -> {
-                    return ms1.getUsername().compareTo(ms2.getUsername());
-                });
-                break;
-            case 4:
-                x.sort((ms1, ms2) -> {
-                    return ms2.getUsername().compareTo(ms1.getUsername());
-                });
-                break;
-            case 6:
-                x.sort((ms1, ms2) -> {
-                    return ms2.getMsgId() - ms1.getMsgId();
-                });
-                break;
-            default:
-                x.sort((ms1, ms2) -> {
-                    return ms1.getMsgId() - ms2.getMsgId();
-                });
-                break;
-        }
-        return x;
-    }*/
-
     public List<Message> countMsg(String count, List<Message> ls) {
         List<Message> x = new ArrayList<>();
         int n = 0;
@@ -242,13 +175,16 @@ public class MsgServiceImpl {
     public String hiba(String err) {
         String[] st = {"Ismeretlen hiba",
             "A megadott felhasználónév már foglalt, kérjük válasszon másikat!",
-            "A két megadott jelszó nem egyezik!"};
+            "A két megadott jelszó nem egyezik!",
+            "A hitelesítő hivatkozás elévült."};
         int q = 0;
         try {
             q = Integer.parseInt(err);
         } catch (NumberFormatException e) {
+            return st[q];
         }
-        int k = Math.max(0, Math.min(st.length - 1, q));
+        int k = q < 0 || q > st.length-1 ? 0 : q;
+        //int k = Math.max(0, Math.min(st.length - 1, q));
         return st[k];
     }
 
@@ -283,30 +219,24 @@ public class MsgServiceImpl {
             return x.stream().filter(m -> m.isDeleted()).collect(Collectors.toList());
         }
         
-        /*List<Message> y = new ArrayList<>();
-        x.forEach(ms -> {
-            if (only.equals("") && !ms.isDeleted()) {
-                y.add(ms);
-            } else if (allowed && only.equals("yes") && ms.isDeleted()) {
-                y.add(ms);
-            }
-
-        });
-        return y;*/
+        
         return x.stream().filter(m -> !m.isDeleted()).collect(Collectors.toList());
     }
 
-    private List<Message> filterTopic(String topic, List<Message> x) {
-        if (topic.equals("")) {
-            return x;
+    public String responseMsg(String num){
+        String[] s = {"Ez itt a visszajelző oldal.",
+                "A megadott címére hitelesítő üzenetet fog kapni, kattintson az "
+                + "ebben található hivatkozásra, és beléphet új fiókjával!",
+                "Felhasználói fiókjának hitelesítése sikeres volt, már beléphet jelszavával!"
+        };
+        int q = 0;
+        try {
+            q = Integer.parseInt(num);
+        } catch (NumberFormatException e) {
+            return s[q];
         }
-        List<Message> y = new ArrayList<>();
-        x.forEach(ms -> {
-            if (ms.getTopic().getTitle().equals(topic)) {
-                y.add(ms);
-            }
-        });
-        return y;
+        int k = q < 0 || q > s.length-1 ? 0 : q;
+        return s[k];
     }
     
     public List<TopicView> displayTopics(){
@@ -319,12 +249,7 @@ public class MsgServiceImpl {
         msgrepo.addNewReply(getCurrentUsername(), text, m.getTopic(), m);
     }
     
-    /*@PreAuthorize("hasRole('ADMIN')")
-    @Transactional
-    public void editMessage(boolean allowed, String ident, String text){
-        Message m = pickMsg(ident, allowed, false).get(0);
-        m.editText(text);
-    }*/
+    
     
     public boolean isAdmin(){
         if (SecurityContextHolder.getContext().getAuthentication() != null){

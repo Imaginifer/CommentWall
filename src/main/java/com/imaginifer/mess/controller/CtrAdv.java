@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.imaginifer.mess;
+package com.imaginifer.mess.controller;
 
 import java.io.*;
 import org.springframework.ui.Model;

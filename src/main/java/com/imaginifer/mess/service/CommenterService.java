@@ -7,6 +7,7 @@ package com.imaginifer.mess.service;
 
 import com.imaginifer.mess.dto.RegData;
 import com.imaginifer.mess.entity.Commenter;
+import com.imaginifer.mess.entity.Pass;
 import com.imaginifer.mess.entity.Permit;
 import com.imaginifer.mess.repo.UserBase;
 import java.time.LocalDateTime;
@@ -24,60 +25,55 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CommenterService {
     
-    private UserBase ub;
-    private PasswordEncoder pwd;
+    private final UserBase ub;
+    private final PasswordEncoder pwd;
+    private final MailingService ms;
     
     @Autowired
-    public CommenterService(UserBase ub, PasswordEncoder pwd) {
+    public CommenterService(UserBase ub, PasswordEncoder pwd, MailingService ms) {
         this.ub = ub;
         this.pwd = pwd;
-    }
-    
-    @Transactional
-    public void addAdmin(){
-        checkPermits();
-        if(ub.noAdmin()){
-            ub.registerNew(new Commenter("admin",pwd.encode("pa ss wo rd 12 34"),""
-                    ,LocalDateTime.of(1980, 1, 1, 9, 15),ub.getPermitByName("ROLE_ADMIN")));
-        }
-    }
-    
-    private void checkPermits(){
-        if(ub.noPermits()){
-            ub.addNewPermit(new Permit("ROLE_ADMIN"));
-            ub.addNewPermit(new Permit("ROLE_USER"));
-        }
+        this.ms = ms;
     }
     
     @Transactional
     public int registerNew(RegData reg){
-        checkPermits();
+        //checkPermits();
         if(ub.nameOccupied(reg.getName())){
             return 1;
         }
         if(!reg.getPwd1().equals(reg.getPwd2())){
             return 2;
         }
-        ub.registerNew(new Commenter(reg.getName(), pwd.encode(reg.getPwd1()), reg.getMail()
-                , LocalDateTime.now(),ub.getPermitByName("ROLE_USER")));
+        Commenter com = new Commenter(reg.getName(), pwd.encode(reg.getPwd1()), reg.getMail().toLowerCase()
+                , LocalDateTime.now()/*,ub.getPermitByName("ROLE_USER")*/);
+        ub.registerNew(com);
+        Pass p = new Pass(com);
+        ub.newPass(p);
+        //System.out.println(reg.getName() + " belépőjének száma: " + p.getPassId());
+        ms.sendValidator(reg.getMail(), p.getPassId());
         return 0;
     }
     
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    public void promoteOrDemote(String id){
-        int q=0;
+    public boolean promoteOrDemote(String id){
+        int q;
+        Commenter c;
         try {
             q=Integer.parseInt(id);
-        } catch (NumberFormatException e) {
-            return;
+            c=ub.findCommenterById(q);
+            c.getId();
+        } catch (NumberFormatException | NullPointerException e) {
+            return false;
         }
-        Commenter c=ub.findCommenterById(q);
+        
         if(c.isAdmin()){
             c.removeAuthority(ub.getPermitByName("ROLE_ADMIN"));
         }else{
             c.grantAuthority(ub.getPermitByName("ROLE_ADMIN"));
         }
+        return true;
     }
     
     @PreAuthorize("hasRole('ADMIN')")
@@ -85,4 +81,38 @@ public class CommenterService {
     public List<Commenter> listCommenters(){
         return ub.listCommenters();
     }
+    
+    @Transactional
+    public boolean validateCommenter(String activator){
+        Pass p;
+        int passId;
+        try {
+            passId = Integer.parseInt(activator);
+            p = ub.findPassById(ms.disentangleActivator(passId));
+            p.getPassId();
+        } catch (NumberFormatException | NullPointerException e) {
+            return false;
+        }
+        p.getComm().grantAuthority(ub.getPermitByName("ROLE_USER"));
+        ub.deletePass(p);
+        return true;
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public boolean banOrRehabilitate(String id){
+        int q;
+        Commenter c;
+        try {
+            q=Integer.parseInt(id);
+            c=ub.findCommenterById(q);
+            c.getId();
+        } catch (NumberFormatException | NullPointerException e) {
+            return false;
+        }
+        
+        c.setEnabled(!c.isEnabled());
+        return true;
+    }
+    
 }
