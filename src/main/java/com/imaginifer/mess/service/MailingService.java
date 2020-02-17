@@ -5,7 +5,7 @@
  */
 package com.imaginifer.mess.service;
 
-import com.imaginifer.mess.repo.UserBase;
+import com.imaginifer.mess.repo.CustomCommenterRepoImpl;
 import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -20,11 +20,11 @@ import org.springframework.stereotype.Service;
 public class MailingService {
     
     private JavaMailSender sender;
-    private UserBase ub;
+    private CustomCommenterRepoImpl ub;
     private final String cim = "kividrotposta@gmail.com";
 
     @Autowired
-    public MailingService(JavaMailSender sender, UserBase ub) {
+    public MailingService(JavaMailSender sender, CustomCommenterRepoImpl ub) {
         this.sender = sender;
         this.ub = ub;
     }
@@ -38,7 +38,7 @@ public class MailingService {
         sender.send(mail);
     }
     
-    public void sendValidator(String address, int passId){
+    public void sendValidator(String address, long passId){
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setFrom(cim);
         mail.setTo(address);
@@ -47,7 +47,7 @@ public class MailingService {
         sender.send(mail);
     }
     
-    private String makeActivator(int ident){
+    private String makeActivator(long ident){
         Random r = new Random();
         int chaff = r.nextInt(9000)+1000;
         StringBuilder sb = new StringBuilder();
@@ -56,13 +56,13 @@ public class MailingService {
         return String.valueOf(kvant);
     }
 
-    public int disentangleActivator(int valid) {
+    public long disentangleActivator(long valid) {
         String s;
         try {
             s = String.valueOf(valid / 17).substring(4);
         } catch (NullPointerException e) {
             return 0;
         }
-        return Integer.parseInt(s);
+        return Long.parseLong(s);
     }
 }

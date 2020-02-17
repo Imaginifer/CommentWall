@@ -5,7 +5,6 @@
  */
 package com.imaginifer.mess.entity;
 
-import java.io.Serializable;
 import java.util.List;
 import javax.persistence.*;
 import javax.persistence.ManyToMany;

@@ -9,11 +9,14 @@ import com.imaginifer.mess.dto.RegData;
 import com.imaginifer.mess.entity.Commenter;
 import com.imaginifer.mess.entity.Pass;
 import com.imaginifer.mess.entity.Permit;
-import com.imaginifer.mess.repo.UserBase;
+import com.imaginifer.mess.repo.CustomCommenterRepoImpl;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,14 +26,14 @@ import org.springframework.transaction.annotation.Transactional;
  * @author imaginifer
  */
 @Service
-public class CommenterService {
+public class CommenterService implements UserDetailsService{
     
-    private final UserBase ub;
+    private final CustomCommenterRepoImpl ub;
     private final PasswordEncoder pwd;
     private final MailingService ms;
     
     @Autowired
-    public CommenterService(UserBase ub, PasswordEncoder pwd, MailingService ms) {
+    public CommenterService(CustomCommenterRepoImpl ub, PasswordEncoder pwd, MailingService ms) {
         this.ub = ub;
         this.pwd = pwd;
         this.ms = ms;
@@ -85,34 +88,33 @@ public class CommenterService {
     @Transactional
     public boolean validateCommenter(String activator){
         Pass p;
-        int passId;
+        long passId;
         try {
-            passId = Integer.parseInt(activator);
+            passId = Long.parseLong(activator);
             p = ub.findPassById(ms.disentangleActivator(passId));
             p.getPassId();
         } catch (NumberFormatException | NullPointerException e) {
             return false;
         }
-        p.getComm().grantAuthority(ub.getPermitByName("ROLE_USER"));
+        p.getCommenter().grantAuthority(ub.getPermitByName("ROLE_USER"));
         ub.deletePass(p);
         return true;
     }
     
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    public boolean banOrRehabilitate(String id){
-        int q;
-        Commenter c;
-        try {
-            q=Integer.parseInt(id);
-            c=ub.findCommenterById(q);
-            c.getId();
-        } catch (NumberFormatException | NullPointerException e) {
+    public boolean banOrRehabilitate(long id){
+        Commenter c = ub.findCommenterById(id);
+        if(c == null){
             return false;
         }
-        
         c.setEnabled(!c.isEnabled());
         return true;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return ub.loadUserByUsername(username);
     }
     
 }

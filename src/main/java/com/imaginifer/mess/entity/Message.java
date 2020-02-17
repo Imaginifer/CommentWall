@@ -22,13 +22,15 @@ import javax.persistence.*;
     attributeNodes= @NamedAttributeNode(value="replies")
 ))
 public class Message implements Serializable{
-    private String username;
+    @ManyToOne(optional = false)
+    private Commenter commenter;
     private String text;
     private LocalDateTime date;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int msgId;
+    private long msgId;
     private boolean deleted;
+    private long nrInTopic;
     @ManyToOne(optional=false)
     private Topic topic;
     @OneToMany(mappedBy = "replyTo")
@@ -43,20 +45,23 @@ public class Message implements Serializable{
         this.msgId = id;
         this.deleted=false;
     }*/
-    public Message(String username, String text, LocalDateTime dt, Topic topic) {
-        this.username = username;
+    public Message(Commenter author, String text, LocalDateTime dt, Topic topic, long nrInTopic) {
+        this.commenter = author;
         this.text = text;
         this.date = dt;
         this.topic = topic;
+        this.nrInTopic = nrInTopic;
         this.deleted = false;
         this.replyTo = null;
     }
     
-    public Message(String username, String text, LocalDateTime dt, Topic topic, Message replyTo) {
-        this.username = username;
+    public Message(Commenter author, String text, LocalDateTime dt, Topic topic, long nrInTopic, 
+            Message replyTo) {
+        this.commenter = author;
         this.text = text;
         this.date = dt;
         this.topic = topic;
+        this.nrInTopic = nrInTopic;
         this.deleted=false;
         this.replyTo = replyTo;
     }
@@ -65,19 +70,19 @@ public class Message implements Serializable{
     }
     
 
-    public String getUsername() {
-        return username;
+    public Commenter getCommenter() {
+        return commenter;
     }
 
     public String getText() {
         return text;
     }
 
-    public String getDate() {
+    public String getFormattedDate() {
         return date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"));
     }
 
-    public int getMsgId() {
+    public long getMsgId() {
         return msgId;
     }
 
@@ -111,6 +116,14 @@ public class Message implements Serializable{
     
     public void editText(String text){
         this.text = text;
+    }
+    
+    public LocalDateTime getDate(){
+        return date;
+    }
+    
+    public long getNrInTopic(){
+        return this.nrInTopic;
     }
     
     

@@ -8,20 +8,21 @@ package com.imaginifer.mess.repo;
 import com.imaginifer.mess.entity.Commenter;
 import com.imaginifer.mess.entity.Pass;
 import com.imaginifer.mess.entity.Permit;
+import com.imaginifer.mess.entity.Sanction;
 //import com.imaginifer.mess.entity.Commenter_;
 //import com.imaginifer.mess.entity.Permit_;
 import java.util.*;
 import javax.persistence.*;
 //import javax.persistence.criteria.*;
 import org.springframework.security.core.userdetails.*;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 /**
  *
  * @author imaginifer
  */
-@Component
-public class UserBase implements UserDetailsService{
+@Repository
+public class CustomCommenterRepoImpl {
     
     @PersistenceContext
     private EntityManager em;
@@ -36,13 +37,18 @@ public class UserBase implements UserDetailsService{
         return em.createQuery("select p from Permit p").getResultList().isEmpty();
     }
     
+    public long nrOfAllCommenters(){
+        return (long) em.createQuery("select count (c) from Commenter c where c.username != :a")
+                .setParameter("a", "admin").getSingleResult();
+    }
+    
     public Permit getPermitByName(String name){
         return (Permit)em.createQuery("select p from Permit p where p.authority = :a")
                 .setParameter("a", name).getSingleResult();
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    //@Override
+    public UserDetails loadUserByUsername(String username) /*throws UsernameNotFoundException*/ {
         return (Commenter)em.createQuery("select c from Commenter c where c.username = :nm")
                 .setParameter("nm", username).getSingleResult();
     }
@@ -56,7 +62,7 @@ public class UserBase implements UserDetailsService{
         em.persist(c);
     }
     
-    public Commenter findCommenterById(int id){
+    public Commenter findCommenterById(long id){
         return (Commenter) em.find(Commenter.class, id);
     }
     
@@ -98,7 +104,7 @@ public class UserBase implements UserDetailsService{
         em.persist(pass);
     }
     
-    public Pass findPassById(int id){
+    public Pass findPassById(long id){
         return (Pass) em.find(Pass.class, id);
     }
     
@@ -108,5 +114,13 @@ public class UserBase implements UserDetailsService{
     
     public List<Pass> getAllPasses(){
         return em.createQuery("select p from Pass p").getResultList();
+    }
+    
+    public List<Sanction> getAllSanctions(){
+        return em.createQuery("select s from Sanction s").getResultList();
+    }
+    
+    public void deleteSanction(Sanction s){
+        em.remove(s);
     }
 }

@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>Topikok</title>
+    <title>Kommentfal</title>
     <link rel="stylesheet" th:href="@{/css/reset.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
   </head>
@@ -10,7 +10,7 @@
     <div class="container">
       <div class="btnrow">
           <ul>
-              <li><a class="hiv" href="http://localhost:8080/messaging">VISSZA</a></li>
+              <!--<li><a class="hiv" href="http://localhost:8080/messaging">VISSZA</a></li>-->
               <li data-sec-authorize="!isAuthenticated()">
                   <a class="hiv" href="http://localhost:8080/login">BELÉP</a></li>
               <li data-sec-authorize="isAuthenticated()">
@@ -30,11 +30,16 @@
               <p class="usr" data-th-text = "${topic.getAuthor()}"></p>
               <p class="txt" data-th-text = "${topic.getTitle()}"></p>
               <div class="msgfooter">
-                <p class="topicmsgs" data-th-text = "${topic.getMessages().size()}"></p>
-                <a data-sec-authorize="hasRole('ADMIN')" class="hiv" data-th-href="@{'/messaging/deltop/?top='+${topic.getTitle()}}">TÖRÖL</a>
-                <a class="hiv" data-th-text = "${topic.getTopicId()}" data-th-href="@{'/messaging?top='+${topic.title}}"></a>
+                <p class="topicmsgs" data-th-text = "${topic.getMessages()}"></p>
+                <a data-sec-authorize="hasRole('ADMIN')" class="hiv" data-th-href="@{'/messaging/deltop/'+${topic.getTopicId()}}">TÖRÖL</a>
+                <a class="hiv" data-th-text = "${topic.getTopicId()}" data-th-href="@{'/messaging/thr/'+${topic.getTopicId()}}"></a>
               </div>
           </div>
+      </div>
+      <div class="msgbox" data-sec-authorize="isAuthenticated()">
+        <div class="newmsg">
+          <a class="hiv" href="http://localhost:8080/messaging/new">ÚJ TOPIK</a>
+        </div>
       </div>
     </div>
   </body>

@@ -7,7 +7,7 @@ package com.imaginifer.mess.controller;
 
 import com.imaginifer.mess.dto.RegData;
 import com.imaginifer.mess.service.CommenterService;
-import com.imaginifer.mess.service.ConvertDTO;
+import com.imaginifer.mess.service.ControllerSupport;
 import com.imaginifer.mess.service.MailingService;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +66,7 @@ public class SecuController {
         if(!id.isEmpty()){
             cs.promoteOrDemote(id);
         }
-        mod.addAttribute("users", ConvertDTO.convertCommenter(cs.listCommenters()));
+        mod.addAttribute("users", ControllerSupport.convertCommenter(cs.listCommenters()));
         return "userlist.html";
     }
     

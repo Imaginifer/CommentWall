@@ -10,7 +10,7 @@
     <div class="container">
       <div class="btnrow">
           <ul>
-              <li><a class="hiv" href="http://localhost:8080/messaging">VISSZA</a></li>
+              <li><a class="hiv" href="http://localhost:8080/messaging">FŐOLDAL</a></li>
               <li data-sec-authorize="isAuthenticated()">
                 <form data-th-action="@{/logout}" method="post">
                   <input type="submit" value="KILÉP">
@@ -18,7 +18,7 @@
               </li>
               <li data-sec-authorize="!isAuthenticated()">
                   <a class="hiv" href="http://localhost:8080/messaging/register">REGISZT.</a></li>
-              <li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>
+              <!--<li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>-->
               <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
           </ul>
       </div>

@@ -19,9 +19,9 @@ public class MessageData {
     @Size(min=1, message="Több betű kell!")
     private String text;
     private List<String> topics=new ArrayList<>();
-    private String chosenTopic;
+    private int chosenTopic;
     private String newTopic;
-    private String replied = "";
+    private int replied = 0;
 
     public String getText() {
         return text;
@@ -35,11 +35,11 @@ public class MessageData {
         return topics;
     }
 
-    public String getChosenTopic() {
+    public int getChosenTopic() {
         return chosenTopic;
     }
 
-    public void setChosenTopic(String chosenTopic) {
+    public void setChosenTopic(int chosenTopic) {
         this.chosenTopic = chosenTopic;
     }
 
@@ -55,16 +55,16 @@ public class MessageData {
         this.topics=topics;
     }
 
-    public String getReplied() {
+    public int getReplied() {
         return replied;
     }
 
-    public void setReplied(String replied) {
+    public void setReplied(int replied) {
         this.replied = replied;
     }
     
     public boolean isResponse(){
-        return !replied.isEmpty();
+        return replied != 0;
     }
     
     

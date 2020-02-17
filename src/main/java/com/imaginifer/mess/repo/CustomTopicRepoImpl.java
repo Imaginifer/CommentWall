@@ -23,14 +23,13 @@ public class CustomTopicRepoImpl implements CustomTopicRepo{
     EntityManager em;
         
     @Override
-    public void removeTopic(String top) {
-        Topic t = (Topic) em.createQuery("select tp from Topic tp where tp.title= :ttl")
-                .setParameter("ttl", top).getSingleResult();
+    public void removeTopic(long id) {
+        Topic t = em.find(Topic.class, id);
         em.remove(t);
     }
     
     @Override
-    public List<Topic> displayTopics(){
+    public List<Topic> getAllTopicsWithMessages(){
         EntityGraph eg = em.getEntityGraph("loadWithMessages");
         return em.createQuery("select t from Topic t")
                 .setHint(QueryHints.HINT_LOADGRAPH, eg).getResultList();
@@ -38,9 +37,17 @@ public class CustomTopicRepoImpl implements CustomTopicRepo{
     }
     
    @Override
-    public Topic newTopic(String author, String title){
-        Topic t = new Topic(author, title);
+    public Topic newTopic(Topic t){
         em.persist(t);
         return t;
     }
+
+    @Override
+    public List<Object[]> displayTopics() {
+        List<Object[]> resultList = em.createQuery("select m.topic, count(m) from "
+                + "Message m group by m.topic order by m.topic.lastUpdate desc").getResultList();
+        return resultList;
+    }
+    
+    
 }

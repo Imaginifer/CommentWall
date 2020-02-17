@@ -18,13 +18,19 @@ public class Pass implements Serializable{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int passId;
+    private long passId;
     private LocalDateTime created;
-    @OneToOne
-    private Commenter comm;
+    @OneToOne(optional = false)
+    private Commenter commenter;
+    private int validator;
 
     public Pass(Commenter comm) {
-        this.comm = comm;
+        this.commenter = comm;
+        this.created = LocalDateTime.now();
+    }
+    
+    public Pass(int validator){
+        this.validator = validator;
         this.created = LocalDateTime.now();
     }
 
@@ -39,17 +45,27 @@ public class Pass implements Serializable{
         this.created = created;
     }
 
-    public Commenter getComm() {
-        return comm;
+    public Commenter getCommenter() {
+        return commenter;
     }
 
-    public void setComm(Commenter comm) {
-        this.comm = comm;
+    public void setCommenter(Commenter commenter) {
+        this.commenter = commenter;
     }
 
-    public int getPassId() {
+    public long getPassId() {
         return passId;
     }
+
+    public int getValidator() {
+        return validator;
+    }
+
+    public void setValidator(int validator) {
+        this.validator = validator;
+    }
+    
+    
     
     
     

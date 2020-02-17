@@ -11,22 +11,22 @@ package com.imaginifer.mess.dto;
  */
 public class CommenterView {
     private String username;
-    private int id;
+    private long id;
     private boolean admin;
     private String formattedJoinDate;
 
-    public CommenterView(String username, int id, boolean admin, String formattedJoinDate) {
+    public CommenterView(String username, long id, boolean admin, String formattedJoinDate) {
         this.username = username;
         this.id = id;
         this.admin = admin;
         this.formattedJoinDate = formattedJoinDate;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

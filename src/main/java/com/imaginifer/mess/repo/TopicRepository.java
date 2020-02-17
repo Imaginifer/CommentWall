@@ -15,6 +15,8 @@ import org.springframework.data.jpa.repository.*;
  */
 public interface TopicRepository extends JpaRepository<Topic, Integer>, CustomTopicRepo{
     Topic findByTitle(String title);
+    Topic findTopicByTopicId(long topicId);
+    String findTitleByTopicId(long topicId);
     @Query("select tp.title from Topic tp")
     List<String> findAllTopicTitle();
 }

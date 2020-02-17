@@ -6,14 +6,15 @@
 package com.imaginifer.mess.repo;
 
 import com.imaginifer.mess.entity.Topic;
-import java.util.List;
+import java.util.*;
 
 /**
  *
  * @author imaginifer
  */
 public interface CustomTopicRepo{
-    void removeTopic(String top);
-    List<Topic> displayTopics();
-    Topic newTopic(String author, String title);
+    void removeTopic(long id);
+    List<Topic> getAllTopicsWithMessages();
+    Topic newTopic(Topic t);
+    List<Object[]> displayTopics();
 }

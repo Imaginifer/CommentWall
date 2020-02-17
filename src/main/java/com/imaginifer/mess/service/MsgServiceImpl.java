@@ -5,12 +5,12 @@
  */
 package com.imaginifer.mess.service;
 
+import com.imaginifer.mess.exceptions.EntityNotFoundException;
 import com.imaginifer.mess.repo.TopicRepository;
 import com.imaginifer.mess.repo.CustomMsgRepoImpl;
 import com.imaginifer.mess.entity.Commenter;
 import com.imaginifer.mess.entity.Topic;
 import com.imaginifer.mess.entity.Message;
-import com.imaginifer.mess.dto.Carrier;
 import com.imaginifer.mess.dto.TopicView;
 import com.imaginifer.mess.dto.MessageView;
 import java.time.LocalDateTime;
@@ -22,7 +22,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -46,118 +45,100 @@ public class MsgServiceImpl {
     }
 
     @Transactional
-    public void addNew(String text, String topicTitle, String newTopic) {
-        String name = getCurrentUsername();
-        msgrepo.addNew(new Message(name, text, LocalDateTime.now(),
-                topicHandling(name, topicTitle, newTopic)));
-        
+    public long addNew(String text, long topicId, String newTopic) {
+        Commenter c = getCurrentUser();
+        Topic tp = topicHandling(c.getUsername(), topicId, newTopic);
+        long nr = newTopic.isEmpty()? getNewNrInTopic(tp.getTopicId()):1;
+        LocalDateTime current = LocalDateTime.now();
+        msgrepo.addNew(new Message(c, text, current, tp, nr));
+        tp.setLastUpdate(current);
+        return tp.getTopicId();
     }
 
     @Transactional
-    private Topic topicHandling(String name, String topicTitle, String newTitle) {
-        if (!newTitle.isEmpty() && allTopicTitles().contains(newTitle)) {
-            topicTitle = newTitle;
-            newTitle = "";
-        }
+    private Topic topicHandling(String name, long topicId, String newTitle) {
         if (newTitle.isEmpty()) {
-            return topicrepo.findByTitle(topicTitle);
+            return topicrepo.findTopicByTopicId(topicId);
         }
-        return topicrepo.newTopic(name, newTitle);
+        Topic t = new Topic(name, newTitle);
+        return topicrepo.newTopic(t);
     }
 
     public List<String> allTopicTitles() {
         List<String> x = topicrepo.findAllTopicTitle();
         return x;
     }
+    
+    public List<TopicView> allTopicTitlesWithIds(){
+        /*TreeSet<Topic> x = new TreeSet<>(new Comparator<Topic>(){
+           @Override
+            public int compare(Topic o1, Topic o2) {
+                if(o1.getLastUpdate().isAfter(o2.getLastUpdate()) 
+                        || o1.getLastUpdate().isEqual(o2.getLastUpdate())){
+                    return -1;
+                }
+                return 1;
+            }
+        });*/
+        List<Object[]> x = topicrepo.displayTopics();
+        List<TopicView> result = new ArrayList<>();
+        result.add(new TopicView(0, null, "Bármely topik", 0));
+        for (Object[] o : x) {
+            Topic tp = (Topic) o[0];
+            result.add(new TopicView(tp.getTopicId(), null, tp.getTitle(), 0));
+        }
+        return result;
+    }
 
     @Transactional
-    public List<MessageView> getMsg(String order, String count, String name,
-             String text, String topic, boolean allowed, String only) {
+    public List<MessageView> getMsg(int order, int count, String name,
+             String text, long topic, boolean allowed, String only) {
         
-        int ord = 0;
-        try {
-            ord = Integer.parseInt(order);
-        } catch (NumberFormatException e) {
-        }
-        return ConvertDTO.convertMessage(countMsg(count, filterDeleted(allowed, only,
-                msgrepo.filterMessages(ord, name, text, topic))));
-
+        int deleted = !only.isEmpty() && isAdmin() ? (only.equals("yes") ? 2 : 1) : 0;
+        return ControllerSupport.convertMessage(msgrepo.filterMessages(order, countNr(count), 
+                name, text, topic, deleted));
     }
     
-    
-    public List<Message> countMsg(String count, List<Message> ls) {
-        List<Message> x = new ArrayList<>();
-        int n = 0;
-        if (count.equals("full") || ls.size() < 2) {
-            return ls;
-        } else {
-            while (n < Math.max(2, ls.size() / 2)) {
-                x.add(ls.get(n++));
-            }
+    private int countNr(int count){
+        int ct = 50;
+        switch(count){
+            case 3:
+                ct *= 2;
+            case 2:
+                ct *= 3;
+            case 1:
+                ct *= 3;
+            default:
+                break;
         }
-
-        return x;
+        return ct;
     }
-
-    public List<MessageView> pickMsg(String id, boolean allowed, boolean all) {
-        List<Message> y = new ArrayList<>();
-        int q = 0;
-        
+    
+    private long getNewNrInTopic(long topicId){
+        return 1+msgrepo.countMessagesInTopic(topicId);
+    }
+    
+    public List<MessageView> pickMsg(long id, boolean all) {
+        List<Message> list = new ArrayList<>();
+        boolean allowed = isAdmin();
         try{
-            q = Integer.parseInt(id);
-            y = msgrepo.pickWithReplies(q);
-        }catch(NumberFormatException | NoSuchElementException ex){
-           throw new EntityNotFoundException("Message with "+id+" not found!");
+            list = msgrepo.pickWithReplies(id);
+        }catch(NoSuchElementException ex){
+            throw new EntityNotFoundException("Ilyen üzenet nem létezik!");
         }
-        
+        if (!allowed && list.get(0).isDeleted()){
+            throw new EntityNotFoundException("Ilyen üzenet nem létezik!");
+        }
         if(all){
-            y.addAll(y.get(0).getReplies());
+            list.addAll(list.get(0).getReplies());
+            list.sort((m1, m2) -> m1.getDate().compareTo(m2.getDate()));
         }
-        return ConvertDTO.convertMessage(filterDeleted(allowed, allowed?"no":"", y));
+        if(all && !allowed){
+            list = list.stream().filter(m -> !m.isDeleted()).collect(Collectors.toList());
+        }
+        return ControllerSupport.convertMessage(list);
     }
     
-    /*@Transactional
-    public void printComments(String id){
-        int q = 0;
-        try {
-            q = Integer.parseInt(id);
-        } catch (NumberFormatException e) {
-            return;
-        }
-        Message m = msgrepo.pickWithReplies(q).get(0);
-        System.out.println("eredeti - "+m.getText());
-        try {
-            Thread.sleep(15000);
-        } catch (InterruptedException e) {
-        }
-        Message m2 = msgrepo.pickWithReplies(q).get(0);
-        System.out.println("új - "+m2.getText());
-    }*/
-    public String searchUrl(Carrier cr) {
-
-        String o = cr.getOrd();
-        if (cr.getDesc() != null) {
-            try {
-                int k = Integer.parseInt(o) + 1;
-                o = Integer.toString(k);
-            } catch (NumberFormatException e) {
-            }
-        }
-        String ord = cr.getOrd()!=null ? "ord=" + o : "";
-        String ct = cr.getCt() != null ? "&ct=h" : "";
-        String del = cr.getDel() != null ? "&only=yes" : "";
-        String tx = !cr.getTx().equals("") ? "&tx=" + cr.getTx() : "";
-        String nm = !cr.getNm().equals("") ? "&nm=" + cr.getNm() : "";
-        String tp = !cr.getTp().equals("Bármely topik") ? "&top=" + cr.getTp() : "";
-        String start = (cr.getOrd()== null
-                && cr.getCt() == null
-                && cr.getTx().equals("")
-                && cr.getNm().equals("")
-                && cr.getTp().equals("Bármely topik")
-                && cr.getDel() == null) ? "" : "?";
-        return start + ord + ct + nm + tx + tp + del;
-    }
-
     /*public List<Message> findMsg(String name, String text, List<Message> in) {
         List<Message> x = new ArrayList<>();
         Pattern f1 = Pattern.compile(name);
@@ -172,87 +153,54 @@ public class MsgServiceImpl {
         return x;
     }*/
 
-    public String hiba(String err) {
-        String[] st = {"Ismeretlen hiba",
-            "A megadott felhasználónév már foglalt, kérjük válasszon másikat!",
-            "A két megadott jelszó nem egyezik!",
-            "A hitelesítő hivatkozás elévült."};
-        int q = 0;
-        try {
-            q = Integer.parseInt(err);
-        } catch (NumberFormatException e) {
-            return st[q];
-        }
-        int k = q < 0 || q > st.length-1 ? 0 : q;
-        //int k = Math.max(0, Math.min(st.length - 1, q));
-        return st[k];
-    }
-
+    
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void deleteMsg(String del, boolean restore) {
-        int q = 0;
-        try {
-            q = Integer.parseInt(del);
-        } catch (NumberFormatException e) {
-            return;
-        }
-
+    public void deleteMsg(long del, boolean restore) {
         try{
-            msgrepo.hideOrRestore(q, restore);
+            msgrepo.hideOrRestore(del, restore);
         }catch(NoSuchElementException ex){
-            throw new EntityNotFoundException("Message with "+q+" not found!");
+            throw new EntityNotFoundException("Message with "+del+" not found!");
         }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    public void removeTopic(String top) {
+    public void removeTopic(long top) {
         topicrepo.removeTopic(top);
     }
 
-    public List<Message> filterDeleted(boolean allowed, String only, List<Message> x) {
-        if (allowed && only.equals("no")) {
-            return x;
-        }
-        if (allowed && only.equals("yes")){
-            return x.stream().filter(m -> m.isDeleted()).collect(Collectors.toList());
-        }
-        
-        
-        return x.stream().filter(m -> !m.isDeleted()).collect(Collectors.toList());
-    }
-
-    public String responseMsg(String num){
-        String[] s = {"Ez itt a visszajelző oldal.",
-                "A megadott címére hitelesítő üzenetet fog kapni, kattintson az "
-                + "ebben található hivatkozásra, és beléphet új fiókjával!",
-                "Felhasználói fiókjának hitelesítése sikeres volt, már beléphet jelszavával!"
-        };
-        int q = 0;
-        try {
-            q = Integer.parseInt(num);
-        } catch (NumberFormatException e) {
-            return s[q];
-        }
-        int k = q < 0 || q > s.length-1 ? 0 : q;
-        return s[k];
+    public List<TopicView> displayTopics(){
+        /*List<Topic> topics = topicrepo.displayTopics();
+        topics.sort((t1, t2) -> {
+            List<Message> topic1 = t1.getMessages();
+            topic1.sort((m1,m2) -> m2.getDate().compareTo(m1.getDate()));
+            List<Message> topic2 = t2.getMessages();
+            topic2.sort((m1,m2) -> m2.getDate().compareTo(m1.getDate()));
+            return topic2.get(0).getDate()
+                    .compareTo(topic1.get(0).getDate());});*/
+        return ControllerSupport.convertTopic(topicrepo.displayTopics());
     }
     
-    public List<TopicView> displayTopics(){
-        return ConvertDTO.convertTopic(topicrepo.displayTopics());
+    public String getTopicName(long topicId){
+        return topicrepo.findTitleByTopicId(topicId);
+    }
+    
+    public long getTopicId(long msgId){
+        return msgrepo.getMessageById(msgId).getTopic().getTopicId();
     }
     
     @Transactional
-    public void newReply(String text, int replied){
+    public void newReply(String text, long replied){
         Message m = msgrepo.getMessageById(replied);
-        msgrepo.addNewReply(getCurrentUsername(), text, m.getTopic(), m);
+        long nr = getNewNrInTopic(m.getTopic().getTopicId());
+        msgrepo.addNew(new Message(getCurrentUser(), text, LocalDateTime.now(),
+                m.getTopic(), nr, m));
     }
     
     
-    
     public boolean isAdmin(){
-        if (SecurityContextHolder.getContext().getAuthentication() != null){
+        if (userHasLoggedIn()){
             for (GrantedAuthority auth : SecurityContextHolder.getContext()
                     .getAuthentication().getAuthorities()) {
                 if(auth.getAuthority().equals("ROLE_ADMIN")){
@@ -264,8 +212,18 @@ public class MsgServiceImpl {
     }
 
     public String getCurrentUsername(){
-        Commenter c = (Commenter)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return c.getUsername();
-        
+        if(userHasLoggedIn()){
+            Commenter c = getCurrentUser();
+            return c.getUsername();
+        }
+        return "null";
+    }
+    
+    private boolean userHasLoggedIn(){
+        return SecurityContextHolder.getContext().getAuthentication() != null;
+    }
+    
+    private Commenter getCurrentUser(){
+        return (Commenter)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

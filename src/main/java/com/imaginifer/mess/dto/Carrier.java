@@ -12,7 +12,8 @@ import java.util.List;
  * @author imaginifer
  */
 public class Carrier {
-    private String nm, tx, ord, desc, ct, del, tp;
+    private String nm = "", tx = "", desc, del;
+    private int ct, ord, tp;
     private List<String> topics;
 
     public String getNm() {
@@ -23,7 +24,7 @@ public class Carrier {
         return tx;
     }
 
-    public String getOrd() {
+    public int getOrd() {
         return ord;
     }
 
@@ -39,7 +40,7 @@ public class Carrier {
         this.tx = tx;
     }
 
-    public void setOrd(String ord) {
+    public void setOrd(int ord) {
         this.ord = ord;
     }
 
@@ -47,11 +48,11 @@ public class Carrier {
         this.desc = desc;
     }
 
-    public String getCt() {
+    public int getCt() {
         return ct;
     }
 
-    public void setCt(String ct) {
+    public void setCt(int ct) {
         this.ct = ct;
     }
     public String getDel(){
@@ -61,11 +62,11 @@ public class Carrier {
         this.del=del;
     }
 
-    public String getTp() {
+    public int getTp() {
         return tp;
     }
 
-    public void setTp(String tp) {
+    public void setTp(int tp) {
         this.tp = tp;
     }
 

@@ -5,6 +5,7 @@
  */
 package com.imaginifer.mess.repo;
 
+import com.imaginifer.mess.entity.Commenter_;
 import com.imaginifer.mess.entity.Topic;
 import com.imaginifer.mess.entity.Message;
 import com.imaginifer.mess.entity.Message_;
@@ -32,7 +33,10 @@ public class CustomMsgRepoImpl {
     }
     
     public boolean msgListTooShort(){
-        return em.createQuery("select ms from Message ms").getResultList().size() < 4;
+        return em.createQuery("select ms from Message ms").getResultList().isEmpty();
+    }
+    public long countNrOfMessages(){
+        return (long) em.createQuery("select count(ms) from Message ms").getSingleResult();
     }
     
     /*public List<Message> fillerMsg() {
@@ -54,15 +58,15 @@ public class CustomMsgRepoImpl {
         return em.createQuery("select ms from Message ms").getResultList();
     }
     
-    public void hideOrRestore(int q, boolean restore){
+    public void hideOrRestore(long q, boolean restore){
         em.find(Message.class, q).setDeleted(!restore);
     }
     
-    public void addNewReply(String name, String text, Topic topic, Message original){
+    /*public void addNewReply(String name, String text, Topic topic, Message original){
         em.persist(new Message(name, text, LocalDateTime.now(), topic, original));
-    }
+    }*/
     
-    public List<Message> pickWithReplies(int id){
+    public List<Message> pickWithReplies(long id){
         EntityGraph eg = em.getEntityGraph("loadWithReplies");
         List<Message> x = em.createQuery("select m from Message m where m.msgId = :i")
                 .setParameter("i", id)
@@ -86,11 +90,23 @@ public class CustomMsgRepoImpl {
         }
     }*/
     
-    public Message getMessageById(int id){
+    public Message getMessageById(long id){
         return em.find(Message.class, id);
     }
     
-    public List<Message> filterMessages(int order, String name, String text, String topic){
+    public long countMessagesInTopic(long topic){
+        /*return ((Number)em.createQuery("select count(m) from Message m where m.topic.topicId := i")
+                .setParameter("i", topicId).getSingleResult()).intValue();*/
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<Message> ms = cq.from(Message.class);
+        cq.select(cb.count(ms)).where(cb.equal(ms.get(Message_.topic)
+                .get(Topic_.topicId), topic));
+        return em.createQuery(cq).getSingleResult();
+    }
+    
+    public List<Message> filterMessages(int order, int count, String name, String text, 
+            long topic, int deleted){
         
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Message> cq = cb.createQuery(Message.class);
@@ -99,16 +115,29 @@ public class CustomMsgRepoImpl {
         List<Predicate> pred = new ArrayList<>();
         
         if(!name.isEmpty()){
-            Predicate p = cb.like(ms.get(Message_.username), "%" + name + "%");
+            Predicate p = cb.like(ms.get(Message_.commenter).get(Commenter_.username), "%" + name + "%");
             pred.add(p);
         }
         if(!text.isEmpty()){
             Predicate p = cb.like(ms.get(Message_.text), "%" + text + "%");
             pred.add(p);
         }
-        if(!topic.isEmpty()){
-            Predicate p = cb.equal(ms.get(Message_.topic).get(Topic_.title), topic);
+        if(topic!=0){
+            Predicate p = cb.equal(ms.get(Message_.topic).get(Topic_.topicId), topic);
             pred.add(p);
+        }
+        
+        switch(deleted){
+            case 2:
+                Predicate p1 = cb.equal(ms.get(Message_.deleted), true);
+                pred.add(p1);
+                break;
+            case 1:
+                break;
+            default:
+                Predicate p = cb.equal(ms.get(Message_.deleted), false);
+                pred.add(p);
+                break;
         }
         
         cq.select(ms).distinct(true).where(pred.toArray(new Predicate[pred.size()]));
@@ -121,20 +150,25 @@ public class CustomMsgRepoImpl {
                 cq.orderBy(cb.desc(ms.get(Message_.date)));
                 break;
             case 3:
-                cq.orderBy(cb.asc(ms.get(Message_.username)));
+                cq.orderBy(cb.asc(ms.get(Message_.commenter).get(Commenter_.username)));
                 break;
             case 4:
-                cq.orderBy(cb.desc(ms.get(Message_.username)));
+                cq.orderBy(cb.desc(ms.get(Message_.commenter).get(Commenter_.username)));
+                break;
+            case 5:
+                cq.orderBy(cb.asc(ms.get(Message_.topic).get(Topic_.title)),
+                        cb.asc(ms.get(Message_.date)));
                 break;
             case 6:
-                cq.orderBy(cb.desc(ms.get(Message_.msgId)));
+                cq.orderBy(cb.desc(ms.get(Message_.topic).get(Topic_.title)),
+                        cb.desc(ms.get(Message_.date)));
                 break;
             default:
                 cq.orderBy(cb.asc(ms.get(Message_.msgId)));
                 break;
         }
         
-        return em.createQuery(cq).getResultList();
+        return em.createQuery(cq).setMaxResults(count).getResultList();
     }
     
     

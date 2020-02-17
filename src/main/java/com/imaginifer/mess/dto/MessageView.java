@@ -13,17 +13,19 @@ public class MessageView {
     private String username;
     private String text;
     private String date;
-    private int msgId;
+    private long msgId;
+    private long nrInTopic;
     private boolean deleted;
     private String topic;
-    private int replyTo;
+    private long replyTo;
 
-    public MessageView(String username, String text, String date, int msgId,
-            boolean deleted, String topic, int replyTo) {
+    public MessageView(String username, String text, String date, long msgId, long nrInTopic,
+            boolean deleted, String topic, long replyTo) {
         this.username = username;
         this.text = text;
         this.date = date;
         this.msgId = msgId;
+        this.nrInTopic = nrInTopic;
         this.deleted = deleted;
         this.topic = topic;
         this.replyTo = replyTo;
@@ -56,7 +58,7 @@ public class MessageView {
         this.date = date;
     }
 
-    public int getMsgId() {
+    public long getMsgId() {
         return msgId;
     }
 
@@ -80,17 +82,27 @@ public class MessageView {
         this.topic = topic;
     }
 
-    public int getReplyTo() {
+    public long getReplyTo() {
         return replyTo;
     }
 
-    public void setReplyTo(int replyTo) {
+    public void setReplyTo(long replyTo) {
         this.replyTo = replyTo;
     }
     
     public boolean isReply(){
         return replyTo != 0;
     }
+
+    public long getNrInTopic() {
+        return nrInTopic;
+    }
+
+    public void setNrInTopic(long nrInTopic) {
+        this.nrInTopic = nrInTopic;
+    }
+    
+    
     
     
     

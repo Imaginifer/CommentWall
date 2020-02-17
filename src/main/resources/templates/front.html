@@ -26,13 +26,13 @@ and open the template in the editor.
                   </li>
                   <li data-sec-authorize="!isAuthenticated()">
                       <a class="hiv" href="http://localhost:8080/messaging/register">REGISZT.</a></li>
-                  <li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>
+                  <li><a class="hiv" href="http://localhost:8080/messaging/">FŐOLDAL</a></li>
                   <li data-sec-authorize="hasRole('ADMIN')">
                         <a class="hiv" href="http://localhost:8080/messaging/commenters">FELHASZN.</a></li>
                   <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
               </ul>
           </div>
-            <div class="btnrow">
+          <!--<div class="btnrow">
                 <ul>
                     <li><a class="hiv" href="http://localhost:8080/messaging">IDENT+</a></li>
                     <li><a class="hiv" href="http://localhost:8080/messaging?ord=6">IDENT-</a></li>
@@ -47,11 +47,17 @@ and open the template in the editor.
                       <a class="hiv" href="http://localhost:8080/messaging?only=yes">TÖRÖLT</a>
                     </li>
                 </ul>
+            </div>-->
+            <div class="msgbox" data-th-if="${returnId != null && returnId != 0}">
+              <div class="newmsg">
+                  <a class="hiv" data-th-href="@{'/messaging/thr/'+${returnId}}" data-th-text="${returnTitle}" ></a>
+              </div>
             </div>
             <div class="messagelist">
                 <div class="msgbox" data-th-each="message: ${messages}">
                     <p class="usr" data-th-text = "${message.username}"></p>
-                    <p class="cimzett" data-th-if="${message.isReply()==true}" data-th-text = "${message.getReplyTo()}"></p>
+                    <p class="cimzett" data-th-if="${message.isReply()==true}">
+                      <a class:"hiv" data-th-text = "${message.getReplyTo()}" data-th-href="@{'/messaging/msg/'+${message.getReplyTo()}}"></a></p>
                     <p class="txt" data-th-text = "${message.text}"></p>
                     <div class="msgfooter">
                       <p class="time" data-th-text = "${message.date}"></p>
@@ -59,13 +65,13 @@ and open the template in the editor.
                       <a class="hiv" data-sec-authorize="isAuthenticated()" data-th-href="@{'/messaging/new?reply='+${message.getMsgId()}}">VÁLASZ</a>
                       <a data-sec-authorize="hasRole('ADMIN')" data-th-if="${message.deleted==false}" class="hiv" data-th-href="@{'/messaging/delete/'+${message.getMsgId()}}">TÖRÖL</a>
                       <a data-th-if="${message.deleted==true}" class="hiv" data-th-href="@{'/messaging/restore/'+${message.getMsgId()}}">VISSZAÁLLÍT</a>
-                      <a class="hiv" data-th-text = "${message.getMsgId()}" data-th-href="@{'/messaging/'+${message.getMsgId()}}"></a>
+                      <a class="hiv" data-th-text = "${message.getNrInTopic()}" data-th-href="@{'/messaging/msg/'+${message.getMsgId()}}"></a>
                     </div>
                 </div>
             </div>
-            <div class="msgbox" data-sec-authorize="isAuthenticated()">
+            <div class="msgbox" data-sec-authorize="isAuthenticated()" data-th-unless="${search == true || topicIdent==null && topicIdent==0}" >
               <div class="newmsg">
-                <a class="hiv" href="http://localhost:8080/messaging/new">ÚJ ÜZENET</a>
+                <a class="hiv" data-th-href="@{'/messaging/new?topic='+${topicIdent}}">ÚJ ÜZENET</a>
               </div>
             </div>
 

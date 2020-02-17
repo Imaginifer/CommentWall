@@ -13,12 +13,12 @@ import java.util.*;
  */
 public class TopicView {
     
-    private int topicId;
+    private long topicId;
     private String author;
     private String title;
-    private List<MessageView> messages;
+    private long messages;
 
-    public TopicView(int topicId, String author, String title, List<MessageView> messages) {
+    public TopicView(long topicId, String author, String title, long messages) {
         this.topicId = topicId;
         this.author = author;
         this.title = title;
@@ -28,11 +28,11 @@ public class TopicView {
     public TopicView() {
     }
     
-    public int getTopicId() {
+    public long getTopicId() {
         return topicId;
     }
 
-    public void setTopicId(int topicId) {
+    public void setTopicId(long topicId) {
         this.topicId = topicId;
     }
 
@@ -52,11 +52,11 @@ public class TopicView {
         this.title = title;
     }
 
-    public List<MessageView> getMessages() {
+    public long getMessages() {
         return messages;
     }
 
-    public void setMessages(List<MessageView> messages) {
+    public void setMessages(long messages) {
         this.messages = messages;
     }
     

@@ -5,6 +5,7 @@
  */
 package com.imaginifer.mess.entity;
 
+import com.imaginifer.mess.enums.SanctionType;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,10 +19,12 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @author imaginifer
  */
 @Entity
+@NamedEntityGraph(name = "loadWithComments", 
+        attributeNodes = @NamedAttributeNode(value ="messages"))
 public class Commenter implements UserDetails, Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
     private String username;
     private String pwd;
     private String mail;
@@ -29,8 +32,12 @@ public class Commenter implements UserDetails, Serializable{
     private boolean enabled;
     private LocalDateTime resetDate;
     private LocalDateTime joinDate;
-    @OneToOne(mappedBy = "comm")
+    @OneToOne(mappedBy = "commenter")
     private Pass pass;
+    @OneToMany(mappedBy= "commenter")
+    private List<Message> messages;
+    @OneToMany(mappedBy = "commenter", fetch = FetchType.EAGER)
+    private List<Sanction> sanctions;
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Permit> authorities;
 
@@ -45,6 +52,8 @@ public class Commenter implements UserDetails, Serializable{
         this.joinDate = date;
         this.resetDate = date;
         authorities = new HashSet<>();
+        messages = new ArrayList<>();
+        sanctions = new ArrayList<>();
         authorities.add(role);
         activated = true;
         enabled = true;
@@ -58,6 +67,8 @@ public class Commenter implements UserDetails, Serializable{
         this.joinDate = date;
         this.resetDate = date;
         authorities = new HashSet<>();
+        messages = new ArrayList<>();
+        sanctions = new ArrayList<>();
     }
 
     
@@ -103,7 +114,8 @@ public class Commenter implements UserDetails, Serializable{
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !sanctions.stream().anyMatch(s -> (s.getType() == SanctionType.BAN 
+                && s.getSanctionScope() == 0));
     }
 
     @Override
@@ -127,7 +139,7 @@ public class Commenter implements UserDetails, Serializable{
         
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
@@ -163,6 +175,20 @@ public class Commenter implements UserDetails, Serializable{
         }
         return false;
     }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public List<Sanction> getSanctions() {
+        return sanctions;
+    }
+
+    
+    
+    
+    
+    
     
     
 
