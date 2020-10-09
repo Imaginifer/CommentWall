@@ -6,7 +6,6 @@
 package com.imaginifer.mess.filter;
 
 import java.io.IOException;
-import java.util.*;
 import javax.servlet.*;
 import org.slf4j.*;
 import org.springframework.stereotype.Component;
@@ -16,9 +15,9 @@ import org.springframework.stereotype.Component;
  * @author imaginifer
  */
 @Component
-public class CharEncodingFilter implements Filter{
+public class LoggingFilter implements Filter{
     
-    private final Logger logger = LoggerFactory.getLogger(CharEncodingFilter.class);
+    private final Logger logger = LoggerFactory.getLogger(LoggingFilter.class);
 
     @Override
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) 

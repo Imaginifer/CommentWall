@@ -5,7 +5,7 @@
  */
 package com.imaginifer.mess.repo;
 
-import com.imaginifer.mess.entity.Topic;
+import com.imaginifer.mess.entity.*;
 import java.util.List;
 import javax.persistence.*;
 import org.hibernate.jpa.QueryHints;
@@ -43,10 +43,26 @@ public class CustomTopicRepoImpl implements CustomTopicRepo{
     }
 
     @Override
-    public List<Object[]> displayTopics() {
+    public List<Object[]> displayTopics(long forumId) {
         List<Object[]> resultList = em.createQuery("select m.topic, count(m) from "
-                + "Message m group by m.topic order by m.topic.lastUpdate desc").getResultList();
+                + "Message m where m.topic.forum.forumId = :i group by m.topic "
+                + "order by m.topic.lastUpdate desc").setParameter("i", forumId).getResultList();
         return resultList;
+    }
+
+    @Override
+    public List<Forum> getAllForums() {
+        return em.createQuery("select f from Forum f order by f.lastUpdate desc").getResultList();
+    }
+
+    @Override
+    public void newForum(Forum f) {
+        em.persist(f);
+    }
+
+    @Override
+    public Forum getForumById(long forumId) {
+        return em.find(Forum.class, forumId);
     }
     
     

@@ -1,39 +1,22 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Új üzenet</title>
-    <link rel="stylesheet" th:href="@{/css/reset.css}">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-  </head>
+  <head th:include="commentwall :: standardHead"></head>
+
   <body class="httr">
     <div class="container">
-      <div class="btnrow">
-          <ul>
-              <li><a class="hiv" href="http://localhost:8080/messaging">FŐOLDAL</a></li>
-              <li data-sec-authorize="isAuthenticated()">
-                <form data-th-action="@{/logout}" method="post">
-                  <input type="submit" value="KILÉP">
-                </form>
-              </li>
-              <!--<li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>-->
-              <li data-sec-authorize="hasRole('ADMIN')">
-                    <a class="hiv" href="http://localhost:8080/messaging/commenters">FELHASZN.</a></li>
-              <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
-          </ul>
-      </div>
+      <nav th:include="commentwall :: navbar"></nav>
 
         <form method="POST" data-th-action="@{/messaging/new}" data-th-object="${message}">
           <div class="msgbox-mid">
               <p class="usr">Név</p>
               <p class="txt" data-sec-authentication="name"></p>
-              <p class="usr" data-th-if="topic == null || topic == 0">Cím</p>
-              <input class="enterlong" type="text" data-th-if="topic == null || topic == 0" data-th-field="*{newTopic}" placeholder="Új topik címe">
+              <p class="usr" data-th-if="${message.getChosenTopic() == 0}">Cím</p>
+              <input class="enterlong" type="text" data-th-if="${message.getChosenTopic() == 0}" data-th-field="*{newTopic}" placeholder="Új topik címe">
               <p class="usr">Üzenet</p>
               <label for="text"></label><input id="textum" type="text" data-th-field="*{text}"/>
               <p class="txt" th:if="${#fields.hasErrors('text')}" th:errors="*{text}">Text Error</p>
               <input type="hidden" value="${message.replied}" data-th-field="*{replied}"/>
-              <input type="hidden" value="${topic}" data-th-field="*{chosenTopic}"/>
+              <input type="hidden" value="${message.getChosenTopic()}" data-th-field="*{chosenTopic}"/>
             </div>
             <!--<div class="msgbox">
                 <div class="searchrow">
@@ -47,7 +30,7 @@
 
             <div class="msgbox">
               <div class="newmsg">
-                <input type="submit" value="KÜLD"/>
+                <input type="submit" value="Küld"/>
               </div>
             </div>
         </form>

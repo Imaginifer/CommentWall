@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import javax.persistence.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -21,10 +23,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Entity
 @NamedEntityGraph(name = "loadWithComments", 
         attributeNodes = @NamedAttributeNode(value ="messages"))
+@NamedEntityGraph(name = "loadWithVotes", 
+        attributeNodes = @NamedAttributeNode(value ="votedIn"))
 public class Commenter implements UserDetails, Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private long commenterId;
     private String username;
     private String pwd;
     private String mail;
@@ -37,9 +41,13 @@ public class Commenter implements UserDetails, Serializable{
     @OneToMany(mappedBy= "commenter")
     private List<Message> messages;
     @OneToMany(mappedBy = "commenter", fetch = FetchType.EAGER)
-    private List<Sanction> sanctions;
+    @Fetch(FetchMode.SELECT)
+    private Set<Sanction> sanctions;
     @ManyToMany(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     private Set<Permit> authorities;
+    @ManyToMany(mappedBy = "voted")
+    private Set<Referendum> votedIn;
 
     public Commenter() {
     }
@@ -53,7 +61,8 @@ public class Commenter implements UserDetails, Serializable{
         this.resetDate = date;
         authorities = new HashSet<>();
         messages = new ArrayList<>();
-        sanctions = new ArrayList<>();
+        sanctions = new HashSet<>();
+        votedIn = new HashSet<>();
         authorities.add(role);
         activated = true;
         enabled = true;
@@ -68,7 +77,7 @@ public class Commenter implements UserDetails, Serializable{
         this.resetDate = date;
         authorities = new HashSet<>();
         messages = new ArrayList<>();
-        sanctions = new ArrayList<>();
+        sanctions = new HashSet<>();
     }
 
     
@@ -114,8 +123,8 @@ public class Commenter implements UserDetails, Serializable{
 
     @Override
     public boolean isAccountNonLocked() {
-        return !sanctions.stream().anyMatch(s -> (s.getType() == SanctionType.BAN 
-                && s.getSanctionScope() == 0));
+        return !sanctions.stream().anyMatch(s -> (s.isValid() && s.getType() == SanctionType.EXILE 
+                && s.getSanctionScope() == null));
     }
 
     @Override
@@ -139,8 +148,8 @@ public class Commenter implements UserDetails, Serializable{
         
     }
 
-    public long getId() {
-        return id;
+    public long getCommenterId() {
+        return commenterId;
     }
 
     public boolean isActivated() {
@@ -167,9 +176,9 @@ public class Commenter implements UserDetails, Serializable{
         this.pass = pass;
     }
     
-    public boolean isAdmin(){
+    public boolean isDirector(){
         for (Permit a : authorities) {
-            if(a.getAuthority().equals("ROLE_ADMIN")){
+            if(a.getAuthority().equals("ROLE_DIRECTOR")){
                 return true;
             }
         }
@@ -180,8 +189,16 @@ public class Commenter implements UserDetails, Serializable{
         return messages;
     }
 
-    public List<Sanction> getSanctions() {
+    public Set<Sanction> getSanctions() {
         return sanctions;
+    }
+
+    public Set<Referendum> getVotedIn() {
+        return votedIn;
+    }
+    
+    public void castVote(Referendum r){
+        votedIn.add(r);
     }
 
     

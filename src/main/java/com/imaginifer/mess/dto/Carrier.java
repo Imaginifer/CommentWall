@@ -5,17 +5,16 @@
  */
 package com.imaginifer.mess.dto;
 
-import java.util.List;
 
 /**
  *
  * @author imaginifer
  */
 public class Carrier {
-    private String nm = "", tx = "", desc, del;
-    private int ct, ord, tp;
-    private List<String> topics;
-
+    private String nm = "", tx = "", ttl = "", res= "msg", desc, del;
+    private int ct, ord;
+    private long tp;
+    
     public String getNm() {
         return nm;
     }
@@ -62,24 +61,29 @@ public class Carrier {
         this.del=del;
     }
 
-    public int getTp() {
+    public long getTp() {
         return tp;
     }
 
-    public void setTp(int tp) {
+    public void setTp(long tp) {
         this.tp = tp;
     }
 
-    public List<String> getTopics() {
-        return topics;
+    public String getRes() {
+        return res;
     }
 
-    public void setTopics(List<String> topics) {
-        this.topics = topics;
+    public void setRes(String res) {
+        this.res = res;
     }
 
-    
-    
+    public String getTtl() {
+        return ttl;
+    }
+
+    public void setTtl(String ttl) {
+        this.ttl = ttl;
+    }
     
     
 }

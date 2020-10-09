@@ -5,6 +5,7 @@
  */
 package com.imaginifer.mess.controller;
 
+import com.imaginifer.mess.dto.PageView;
 import com.imaginifer.mess.dto.RegData;
 import com.imaginifer.mess.service.CommenterService;
 import com.imaginifer.mess.service.ControllerSupport;
@@ -22,20 +23,20 @@ import org.springframework.web.bind.annotation.*;
  * @author imaginifer
  */
 @Controller
-public class SecuController {
+public class SecurityCtrl {
     
     private final CommenterService cs;
     private MailingService ms;
     
     @Autowired
-    public SecuController(CommenterService cs, MailingService ms) {
+    public SecurityCtrl(CommenterService cs, MailingService ms) {
         this.cs = cs;
         this.ms = ms;
     }
     
     @RequestMapping(value="/messaging/login",method=RequestMethod.GET)
-    public String loginScreen(){
-        //cs.addAdmin();
+    public String loginScreen(Model mod){
+        mod.addAttribute("cim", new PageView("Belépés"));
         return "signin.html";
     }
     
@@ -44,6 +45,7 @@ public class SecuController {
     @RequestMapping(value="/messaging/register",method=RequestMethod.GET)
     public String regScreen(Model mod){
         mod.addAttribute("data", new RegData());
+        mod.addAttribute("cim", new PageView("Regisztráció"));
         return "regpage.html";
     }
     
@@ -67,7 +69,8 @@ public class SecuController {
             cs.promoteOrDemote(id);
         }
         mod.addAttribute("users", ControllerSupport.convertCommenter(cs.listCommenters()));
-        return "userlist.html";
+        mod.addAttribute("cim", new PageView("Felhasználók"));
+        return "front.html";
     }
     
     @GetMapping("/messaging/valid")

@@ -18,7 +18,7 @@ public class FilterConfig {
     public FilterRegistrationBean filterReg1(){
         FilterRegistrationBean fb = new FilterRegistrationBean();
         //fb.addUrlPatterns("/messages/*");
-        fb.setFilter(new CharEncodingFilter());
+        fb.setFilter(new LoggingFilter());
         return fb;
     }
 }

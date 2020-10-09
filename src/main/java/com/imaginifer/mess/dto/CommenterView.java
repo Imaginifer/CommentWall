@@ -12,13 +12,13 @@ package com.imaginifer.mess.dto;
 public class CommenterView {
     private String username;
     private long id;
-    private boolean admin;
+    private boolean director;
     private String formattedJoinDate;
 
-    public CommenterView(String username, long id, boolean admin, String formattedJoinDate) {
+    public CommenterView(String username, long id, boolean director, String formattedJoinDate) {
         this.username = username;
         this.id = id;
-        this.admin = admin;
+        this.director = director;
         this.formattedJoinDate = formattedJoinDate;
     }
 
@@ -30,12 +30,12 @@ public class CommenterView {
         this.id = id;
     }
 
-    public boolean isAdmin() {
-        return admin;
+    public boolean isDirector() {
+        return director;
     }
 
-    public void setAdmin(boolean admin) {
-        this.admin = admin;
+    public void setDirector(boolean director) {
+        this.director = director;
     }
 
     public String getFormattedJoinDate() {

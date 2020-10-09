@@ -9,6 +9,6 @@ package com.imaginifer.mess.enums;
  *
  * @author imaginifer
  */
-public enum SanctionType {
-    EXILE, ADMONITION, INVITATION, MODERATOR, ADMINISTRATOR; 
+public enum TopicStatus {
+    STANDARD,LOCKED,ARCHIVED,PERMANENT
 }

@@ -5,7 +5,6 @@
  */
 package com.imaginifer.mess.dto;
 
-import java.util.*;
 
 /**
  *
@@ -14,15 +13,33 @@ import java.util.*;
 public class TopicView {
     
     private long topicId;
-    private String author;
+    private String text;
     private String title;
     private long messages;
+    private String lastUpdate;
 
-    public TopicView(long topicId, String author, String title, long messages) {
+    public TopicView(long topicId, String text, String title, long messages, String lastUpdate) {
         this.topicId = topicId;
-        this.author = author;
+        this.text = text;
         this.title = title;
         this.messages = messages;
+        this.lastUpdate = lastUpdate;
+    }
+    
+    public TopicView(long topicId, String title) {
+        this.topicId = topicId;
+        this.text = null;
+        this.title = title;
+        this.messages = 0;
+        this.lastUpdate = null;
+    }
+
+    public TopicView(String author, String title) {
+        this.topicId = 0;
+        this.text = author;
+        this.title = title;
+        this.messages = 0;
+        this.lastUpdate = null;
     }
 
     public TopicView() {
@@ -36,12 +53,12 @@ public class TopicView {
         this.topicId = topicId;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getText() {
+        return text;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setText(String text) {
+        this.text = text;
     }
 
     public String getTitle() {
@@ -59,6 +76,15 @@ public class TopicView {
     public void setMessages(long messages) {
         this.messages = messages;
     }
+
+    public String getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(String lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
+    
     
     
 }

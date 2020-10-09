@@ -39,7 +39,7 @@ public class CustomCommenterRepoImpl {
     
     public long nrOfAllCommenters(){
         return (long) em.createQuery("select count (c) from Commenter c where c.username != :a")
-                .setParameter("a", "admin").getSingleResult();
+                .setParameter("a", "Imaginifer").getSingleResult();
     }
     
     public Permit getPermitByName(String name){
@@ -47,8 +47,7 @@ public class CustomCommenterRepoImpl {
                 .setParameter("a", name).getSingleResult();
     }
 
-    //@Override
-    public UserDetails loadUserByUsername(String username) /*throws UsernameNotFoundException*/ {
+    public UserDetails loadUserByUsername(String username){
         return (Commenter)em.createQuery("select c from Commenter c where c.username = :nm")
                 .setParameter("nm", username).getSingleResult();
     }
@@ -75,11 +74,11 @@ public class CustomCommenterRepoImpl {
         em.remove(c);
     }
     
-    public boolean noAdmin(){
+    public boolean noDirector(){
         
         return em.createQuery("select c from Commenter c join "
                 + "c.authorities auth where auth.authority = :a")
-                .setParameter("a", "ROLE_ADMIN")
+                .setParameter("a", "ROLE_DIRECTOR")
                 .getResultList().isEmpty();
     }
     
@@ -97,7 +96,7 @@ public class CustomCommenterRepoImpl {
     public List<Commenter> listCommenters(){
         return em.createQuery("select c from Commenter c where c.username != :n "
                 + "and c.activated = true")
-                .setParameter("n", "admin").getResultList();
+                .setParameter("n", "Imaginifer").getResultList();
     }
     
     public void newPass(Pass pass){
@@ -122,5 +121,9 @@ public class CustomCommenterRepoImpl {
     
     public void deleteSanction(Sanction s){
         em.remove(s);
+    }
+    
+    public void newSanction(Sanction s){
+        em.persist(s);
     }
 }

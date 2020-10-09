@@ -13,10 +13,9 @@ import org.springframework.data.jpa.repository.*;
  *
  * @author imaginifer
  */
-public interface TopicRepository extends JpaRepository<Topic, Integer>, CustomTopicRepo{
+public interface TopicRepository extends JpaRepository<Topic, Long>, CustomTopicRepo{
     Topic findByTitle(String title);
     Topic findTopicByTopicId(long topicId);
-    String findTitleByTopicId(long topicId);
     @Query("select tp.title from Topic tp")
     List<String> findAllTopicTitle();
 }

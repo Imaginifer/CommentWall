@@ -3,12 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.imaginifer.mess.enums;
+package com.imaginifer.mess.numeralconv;
 
 /**
  *
  * @author imaginifer
  */
-public enum SanctionType {
-    EXILE, ADMONITION, INVITATION, MODERATOR, ADMINISTRATOR; 
+public class NumeralConvException extends Exception {
+
+    
+    public NumeralConvException() {
+    }
+
+    
+    public NumeralConvException(String msg) {
+        super(msg);
+    }
 }

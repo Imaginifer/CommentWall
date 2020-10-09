@@ -26,6 +26,7 @@ public class Message implements Serializable{
     private Commenter commenter;
     private String text;
     private LocalDateTime date;
+    private String ident;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long msgId;
@@ -38,14 +39,7 @@ public class Message implements Serializable{
     @ManyToOne
     private Message replyTo;
 
-    /*public Message(String username, String text, LocalDateTime dt, int id) {
-        this.username = username;
-        this.text = text;
-        this.date = dt;
-        this.msgId = id;
-        this.deleted=false;
-    }*/
-    public Message(Commenter author, String text, LocalDateTime dt, Topic topic, long nrInTopic) {
+    public Message(Commenter author, String text, LocalDateTime dt, Topic topic, long nrInTopic, String ident) {
         this.commenter = author;
         this.text = text;
         this.date = dt;
@@ -53,10 +47,11 @@ public class Message implements Serializable{
         this.nrInTopic = nrInTopic;
         this.deleted = false;
         this.replyTo = null;
+        this.ident = ident;
     }
     
     public Message(Commenter author, String text, LocalDateTime dt, Topic topic, long nrInTopic, 
-            Message replyTo) {
+            Message replyTo, String ident) {
         this.commenter = author;
         this.text = text;
         this.date = dt;
@@ -64,6 +59,7 @@ public class Message implements Serializable{
         this.nrInTopic = nrInTopic;
         this.deleted=false;
         this.replyTo = replyTo;
+        this.ident = ident;
     }
 
     public Message() {
@@ -125,6 +121,16 @@ public class Message implements Serializable{
     public long getNrInTopic(){
         return this.nrInTopic;
     }
+
+    public String getIdent() {
+        return ident;
+    }
+
+    public void setIdent(String ident) {
+        this.ident = ident;
+    }
+    
+    
     
     
     

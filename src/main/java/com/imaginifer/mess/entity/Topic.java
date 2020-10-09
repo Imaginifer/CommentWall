@@ -5,9 +5,10 @@
  */
 package com.imaginifer.mess.entity;
 
+import com.imaginifer.mess.enums.TopicAccess;
+import com.imaginifer.mess.enums.TopicStatus;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import javax.persistence.*;
 import static javax.persistence.CascadeType.REMOVE;
@@ -26,18 +27,30 @@ public class Topic implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long topicId;
-    private String author="";
+    private String text="";
     private String title="";
     private LocalDateTime created;
     private LocalDateTime lastUpdate;
+    @Enumerated(EnumType.STRING)
+    private TopicStatus status;
+    @Enumerated(EnumType.STRING)
+    private TopicAccess access;
     @OneToMany(cascade = REMOVE, mappedBy = "topic")
-    private List<Message> messages = new ArrayList<>();
+    private final List<Message> messages = new ArrayList<>();
+    @ManyToOne(optional = false)
+    private Forum forum;
     
-    public Topic(String author, String title){
-        this.author=author;
+    public Topic(String title, String text, Forum forum, boolean hidden){
+        this.text=text.length() > 100 ? text.substring(0, 100) : text;
         this.title=title;
         this.created=LocalDateTime.now();
         this.lastUpdate=LocalDateTime.now();
+        this.forum = forum;
+        this.access = hidden ? 
+                (forum.getAccess() == TopicAccess.ALL 
+                || forum.getAccess() == TopicAccess.USER ? TopicAccess.USER : 
+                TopicAccess.INTERNAL) : forum.getAccess();
+        this.status = TopicStatus.STANDARD;
     }
     
     public Topic(){
@@ -47,8 +60,8 @@ public class Topic implements Serializable{
         return topicId;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getText() {
+        return text;
     }
 
     public String getTitle() {
@@ -75,16 +88,33 @@ public class Topic implements Serializable{
         this.lastUpdate = lastUpdate;
     }
     
-    public String getFormattedCreated(){
-        return created.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"));
-    }
-    
-    public String getFormattedLastUpdate(){
-        return lastUpdate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"));
-    }
     
     public void update(){
         this.lastUpdate = LocalDateTime.now();
+    }
+
+    public Forum getForum() {
+        return forum;
+    }
+
+    public void setForum(Forum forum) {
+        this.forum = forum;
+    }
+
+    public TopicStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TopicStatus status) {
+        this.status = status;
+    }
+
+    public TopicAccess getAccess() {
+        return access;
+    }
+
+    public void setAccess(TopicAccess access) {
+        this.access = access;
     }
     
     

@@ -20,13 +20,13 @@ import org.springframework.stereotype.Service;
 public class MailingService {
     
     private JavaMailSender sender;
-    private CustomCommenterRepoImpl ub;
+    private CustomCommenterRepoImpl cr;
     private final String cim = "kividrotposta@gmail.com";
 
     @Autowired
     public MailingService(JavaMailSender sender, CustomCommenterRepoImpl ub) {
         this.sender = sender;
-        this.ub = ub;
+        this.cr = ub;
     }
     
     public void sendSimpleTestMail(){

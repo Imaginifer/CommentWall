@@ -5,6 +5,7 @@
  */
 package com.imaginifer.mess.controller;
 
+import com.imaginifer.mess.dto.PageView;
 import java.io.*;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +24,11 @@ public class CtrAdv {
         ByteArrayOutputStream str = new ByteArrayOutputStream();
         PrintStream pr = new PrintStream(str);
         ex.printStackTrace(pr);
-        mod.addAttribute("errortext", ex.getMessage()==null
+        mod.addAttribute("cim", new PageView("Hiba!"));
+        mod.addAttribute("alcim", "Gond van");
+        mod.addAttribute("reply", ex.getMessage()==null
                 ?"Valaki, valahol elrontott valamit":ex.getMessage());
         mod.addAttribute("stacktrace", str.toString());
-        return "hiba";
+        return "msg";
     }
 }

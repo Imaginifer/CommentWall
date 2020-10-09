@@ -5,6 +5,7 @@
  */
 package com.imaginifer.mess.repo;
 
+import com.imaginifer.mess.entity.Forum;
 import com.imaginifer.mess.entity.Topic;
 import java.util.*;
 
@@ -16,5 +17,8 @@ public interface CustomTopicRepo{
     void removeTopic(long id);
     List<Topic> getAllTopicsWithMessages();
     Topic newTopic(Topic t);
-    List<Object[]> displayTopics();
+    List<Object[]> displayTopics(long forumId);
+    List<Forum> getAllForums();
+    void newForum(Forum f);
+    Forum getForumById(long forumId);
 }

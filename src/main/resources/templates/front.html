@@ -5,76 +5,77 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
 <html dir="ltr">
-    <head>
-        <title>Üzenetek</title>
-        <meta charset="UTF-8">
-        <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
-        <link rel="stylesheet" th:href="@{/css/reset.css}">
-        <link rel="stylesheet" th:href="@{/css/style.css}">
-    </head>
+    <head th:include="commentwall :: standardHead"></head>
     <body class="httr">
         <div class="container">
-          <div class="btnrow">
-              <ul>
-                  <li data-sec-authorize="!isAuthenticated()" >
-                      <a class="hiv" href="http://localhost:8080/login">BELÉP</a></li>
-                  <!--<li data-sec-authorize="isAuthenticated()"><a class="hiv" href="http://localhost:8080/logout">KILÉP</a></li>-->
-                  <li data-sec-authorize="isAuthenticated()">
-                    <form data-th-action="@{/logout}" method="post">
-                      <input type="submit" value="KILÉP">
-                    </form>
-                  </li>
-                  <li data-sec-authorize="!isAuthenticated()">
-                      <a class="hiv" href="http://localhost:8080/messaging/register">REGISZT.</a></li>
-                  <li><a class="hiv" href="http://localhost:8080/messaging/">FŐOLDAL</a></li>
-                  <li data-sec-authorize="hasRole('ADMIN')">
-                        <a class="hiv" href="http://localhost:8080/messaging/commenters">FELHASZN.</a></li>
-                  <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
-              </ul>
-          </div>
-          <!--<div class="btnrow">
-                <ul>
-                    <li><a class="hiv" href="http://localhost:8080/messaging">IDENT+</a></li>
-                    <li><a class="hiv" href="http://localhost:8080/messaging?ord=6">IDENT-</a></li>
-                    <li><a class="hiv" href="http://localhost:8080/messaging?ord=1">DÁTUM+</a></li>
-                    <li><a class="hiv" href="http://localhost:8080/messaging?ord=2">DÁTUM-</a></li>
-                    <li><a class="hiv" href="http://localhost:8080/messaging?ord=3">NÉV+</a></li>
-                    <li><a class="hiv" href="http://localhost:8080/messaging?ord=4">NÉV-</a></li>
-                    <li data-sec-authorize="hasRole('ADMIN')">
-                      <a class="hiv" href="http://localhost:8080/messaging?only=no">MIND</a>
-                    </li>
-                    <li data-sec-authorize="hasRole('ADMIN')">
-                      <a class="hiv" href="http://localhost:8080/messaging?only=yes">TÖRÖLT</a>
-                    </li>
-                </ul>
-            </div>-->
-            <div class="msgbox" data-th-if="${returnId != null && returnId != 0}">
+          <nav th:include="commentwall :: navbar"></nav>
+
+          <div class="msgbox" data-th-if="${return != null}">
               <div class="newmsg">
-                  <a class="hiv" data-th-href="@{'/messaging/thr/'+${returnId}}" data-th-text="${returnTitle}" ></a>
+                  <a class="hiv" data-th-href="@{'/messaging/thr/'+${return.topicId}}" data-th-text="${return.title}" ></a>
               </div>
             </div>
-            <div class="messagelist">
+            <div class="messagelist" data-th-if="${messages != null}">
                 <div class="msgbox" data-th-each="message: ${messages}">
-                    <p class="usr" data-th-text = "${message.username}"></p>
-                    <p class="cimzett" data-th-if="${message.isReply()==true}">
-                      <a class:"hiv" data-th-text = "${message.getReplyTo()}" data-th-href="@{'/messaging/msg/'+${message.getReplyTo()}}"></a></p>
-                    <p class="txt" data-th-text = "${message.text}"></p>
-                    <div class="msgfooter">
-                      <p class="time" data-th-text = "${message.date}"></p>
-                      <p class="time" data-th-text = "${message.getTopic()}"></p>
-                      <a class="hiv" data-sec-authorize="isAuthenticated()" data-th-href="@{'/messaging/new?reply='+${message.getMsgId()}}">VÁLASZ</a>
-                      <a data-sec-authorize="hasRole('ADMIN')" data-th-if="${message.deleted==false}" class="hiv" data-th-href="@{'/messaging/delete/'+${message.getMsgId()}}">TÖRÖL</a>
-                      <a data-th-if="${message.deleted==true}" class="hiv" data-th-href="@{'/messaging/restore/'+${message.getMsgId()}}">VISSZAÁLLÍT</a>
-                      <a class="hiv" data-th-text = "${message.getNrInTopic()}" data-th-href="@{'/messaging/msg/'+${message.getMsgId()}}"></a>
-                    </div>
+                  <section class="msgheader">
+                    <ul>
+                      <li id="username" data-th-text = "${message.username}"></li>
+                      <li data-th-text = "${message.date}"></li>
+                      <li data-th-text = "${message.ident}"></li>
+                    </ul>
+                    <a class="hiv" data-th-text = "${message.getNrInTopic()}" data-th-href="@{'/messaging/msg/'+${message.getMsgId()}}"></a>
+                  </section>
+                  <!--<p class="usr" data-th-text = "${message.username}"></p>-->
+                  <p data-th-if="${message.isReply()==true}">
+                    <a class="cimzett" data-th-text = "${message.getReplyToNr()}" data-th-href="@{'/messaging/msg/'+${message.getReplyTo()}}"></a></p>
+                  <p class="txt" data-th-utext = "${message.text}"></p>
+                  <p data-th-if="${cim.isSearch()}" data-th-text = "${message.getTopic()}"></p>
+                  <div data-sec-authorize="isAuthenticated()" class="msgfooter">
+                    <a class="hiv" data-sec-authorize="isAuthenticated()" data-th-href="@{'/messaging/new?reply='+${message.getMsgId()}}">Válasz</a>
+                    <a data-sec-authorize="hasRole('DIRECTOR')" data-th-if="${message.deleted==false}" class="hiv" data-th-href="@{'/messaging/delete/'+${message.getMsgId()}}">Töröl</a>
+                    <a data-th-if="${message.deleted==true}" class="hiv" data-th-href="@{'/messaging/restore/'+${message.getMsgId()}}">Visszaállít</a>
+                  </div>
                 </div>
             </div>
-            <div class="msgbox" data-sec-authorize="isAuthenticated()" data-th-unless="${search == true || topicIdent==null && topicIdent==0}" >
+            <div class="msgbox" data-sec-authorize="isAuthenticated()" data-th-unless="${cim.isSearch() || topicIdent==null || topicIdent==0}" >
               <div class="newmsg">
-                <a class="hiv" data-th-href="@{'/messaging/new?topic='+${topicIdent}}">ÚJ ÜZENET</a>
+                <a class="hiv" data-th-href="@{'/messaging/new?topic='+${topicIdent}}">Új üzenet</a>
               </div>
             </div>
-
+            <!--Topiklistázás-->
+            <div class="messagelist" data-th-if="${topics != null}">
+              <div class="msgbox" data-th-each="topic: ${topics}">
+                <p class="usr" data-th-text = "${topic.getTitle()}"></p>
+                <p class="txt" data-th-text = "${topic.getText()}"></p>
+                <div class="msgfooter">
+                  <p id="topiclast" data-th-text = "${topic.getLastUpdate()}"></p>
+                  <a data-sec-authorize="hasRole('DIRECTOR')" class="hiv" data-th-href="@{'/messaging/deltop/'+${topic.getTopicId()}}">Töröl</a>
+                  <a id="topicmsgs" class="hiv" data-th-text = "${topic.getMessages()}" data-th-href="@{'/messaging/thr/'+${topic.getTopicId()}}"></a>
+                </div>
+              </div>
+            </div>
+            <div class="msgbox" data-sec-authorize="isAuthenticated()" data-th-if="${topics != null}">
+              <div class="newmsg">
+                <a class="hiv" href="http://localhost:8080/messaging/new">Új topik</a>
+              </div>
+            </div>
+            <!--Kommentelő-listázás-->
+            <div class="messagelist" data-sec-authorize="hasRole('DIRECTOR')" data-th-if="${users != null}">
+              <div class="msgbox" data-th-each="user: ${users}">
+                  <p class="txt" data-th-text = "${user.username}"></p>
+                  <div class="msgfooter">
+                    <p data-th-text = "${user.getFormattedJoinDate()}"></p>
+                    <!--<form data-th-object="${data}">
+                        <input type="hidden" value="${user.getId()}" data-th-field="${data.tx}">
+                        <input class="hiv" data-th-if="${user.isAdmin()==false}" type="submit" value="ELŐLÉPTET">
+                        <input class="hiv" data-th-if="${user.isAdmin()==true}" type="submit" value="LEFOKOZ">
+                    </form>-->
+                    <a data-sec-authorize="hasRole('DIRECTOR')" data-th-if="${user.isDirector()==false}" class="hiv" data-th-href="@{'/messaging/commenters?id='+${user.getId()}}">Előléptet</a>
+                    <a data-sec-authorize="hasRole('DIRECTOR')" data-th-if="${user.isDirector()==true}" class="hiv" data-th-href="@{'/messaging/commenters?id='+${user.getId()}}">Lefokoz</a>
+                    <p class="hiv" data-th-text = "${user.getId()}"></p>
+                  </div>
+              </div>
+            </div>
         </div>
     </body>
 </html>

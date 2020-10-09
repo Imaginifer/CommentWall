@@ -1,27 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Belépés</title>
-    <link rel="stylesheet" th:href="@{/css/reset.css}">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-  </head>
+  <head th:include="commentwall :: standardHead"></head>
   <body class="httr">
     <div class="container">
-      <div class="btnrow">
-          <ul>
-              <li><a class="hiv" href="http://localhost:8080/messaging">FŐOLDAL</a></li>
-              <li data-sec-authorize="isAuthenticated()">
-                <form data-th-action="@{/logout}" method="post">
-                  <input type="submit" value="KILÉP">
-                </form>
-              </li>
-              <li data-sec-authorize="!isAuthenticated()">
-                  <a class="hiv" href="http://localhost:8080/messaging/register">REGISZT.</a></li>
-              <!--<li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>-->
-              <li><a class="hiv" href="http://localhost:8080/messaging/search">KERES</a></li>
-          </ul>
-      </div>
+      <nav th:include="commentwall :: navbar"></nav>
 
         <form method="POST" data-th-action="@{/messaging/login}" >
             <div class="msgbox-mid">
@@ -40,7 +22,12 @@
               </div>
               <div class="msgbox">
                 <div class="newmsg">
-                  <input type="submit" value="KÜLD"/>
+                  <input type="submit" value="Küld"/>
+                </div>
+              </div>
+              <div class="msgbox">
+                <div class="newmsg">
+                  <a class="hiv" href="http://localhost:8080/messaging/register">Új fiók</a>
                 </div>
               </div>
         </form>

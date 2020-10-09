@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head th:fragment="standardHead">
+      <title th:text="${cim.getTitle()}">Kommentfal</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" th:href="@{/css/reset.css}">
+      <link rel="stylesheet" th:href="@{/css/style.css}">
+  </head>
+  <body class="httr">
+    <div class="container">
+      <nav th:fragment="navbar">
+        <ul>
+            <li data-th-if="${cim.isNotMain()}">
+              <a class="hiv" th:href="@{~/messaging}">Főoldal</a></li>
+            <li data-th-if="${cim.isNotEntry()}" data-sec-authorize="!isAuthenticated()">
+                <a class="hiv" th:href="@{~/messaging/login}">Belépés</a></li>
+            <li data-sec-authorize="isAuthenticated()">
+              <form data-th-action="@{/logout}" method="post">
+                <input type="submit" value="Kilép">
+              </form>
+            </li>
+            <li data-th-if="${cim.isNotCommenters()}" data-sec-authorize="hasRole('DIRECTOR')">
+                      <a class="hiv" th:href="@{~/messaging/commenters}">Felhasználók</a></li>
+            <li data-th-if="${cim.isNotSearch()}">
+              <a class="hiv" th:href="@{~/messaging/search}">Keresés</a></li>
+            <li data-sec-authorize="isAuthenticated()" data-th-if="${cim.isNotAccount()}">
+              <a class="hiv" th:href="@{~/messaging/account}">Fiók</a></li>
+        </ul>
+
+      </nav>
+      <div class="msgbox-mid">
+        <div class="newmsg"> <p class="usr">Üzenet</p></div>
+        <div class="newmsg"> <p class="txt"  data-th-text = "${reply}"></p></div>
+      </div>
+
+    </div>
+  </body>
+</html>

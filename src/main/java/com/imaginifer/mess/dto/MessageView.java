@@ -13,22 +13,28 @@ public class MessageView {
     private String username;
     private String text;
     private String date;
+    private String ident;
     private long msgId;
-    private long nrInTopic;
+    private String nrInTopic;
     private boolean deleted;
     private String topic;
+    private long topicId;
+    private String replyToNr;
     private long replyTo;
 
-    public MessageView(String username, String text, String date, long msgId, long nrInTopic,
-            boolean deleted, String topic, long replyTo) {
+    public MessageView(String username, String text, String date, String ident, long msgId, 
+            String nrInTopic, boolean deleted, String topic, long topicId, String replyToNr, long replyTo) {
         this.username = username;
         this.text = text;
         this.date = date;
         this.msgId = msgId;
+        this.ident = ident;
         this.nrInTopic = nrInTopic;
         this.deleted = deleted;
         this.topic = topic;
+        this.topicId = topicId;
         this.replyTo = replyTo;
+        this.replyToNr = replyToNr;
     }
 
     public MessageView() {
@@ -94,13 +100,41 @@ public class MessageView {
         return replyTo != 0;
     }
 
-    public long getNrInTopic() {
+    public String getNrInTopic() {
         return nrInTopic;
     }
 
-    public void setNrInTopic(long nrInTopic) {
+    public void setNrInTopic(String nrInTopic) {
         this.nrInTopic = nrInTopic;
     }
+
+    public String getReplyToNr() {
+        return replyToNr;
+    }
+
+    public void setReplyToNr(String replyToNr) {
+        this.replyToNr = replyToNr;
+    }
+
+    public String getIdent() {
+        return ident;
+    }
+
+    public void setIdent(String ident) {
+        this.ident = ident;
+    }
+
+    public long getTopicId() {
+        return topicId;
+    }
+
+    public void setTopicId(long topicId) {
+        this.topicId = topicId;
+    }
+    
+    
+    
+    
     
     
     

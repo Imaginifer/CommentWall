@@ -1,108 +1,113 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Keresés</title>
-    <link rel="stylesheet" th:href="@{/css/reset.css}">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-  </head>
+  <head th:include="commentwall :: standardHead"></head>
+
   <body class="httr">
     <div class="container">
-      <div class="btnrow">
-          <ul>
-              <li><a class="hiv" href="http://localhost:8080/messaging">FŐOLDAL</a></li>
-              <li data-sec-authorize="!isAuthenticated()">
-                  <a class="hiv" href="http://localhost:8080/login">BELÉP</a></li>
-              <li data-sec-authorize="isAuthenticated()">
-                <form data-th-action="@{/logout}" method="post">
-                  <input type="submit" value="KILÉP">
-                </form>
-              </li>
-              <li data-sec-authorize="!isAuthenticated()">
-                  <a class="hiv" href="http://localhost:8080/messaging/register">REGISZT.</a></li>
-              <!--<li><a class="hiv" href="http://localhost:8080/messaging/topics">TOPIK</a></li>-->
-              <li data-sec-authorize="hasRole('ADMIN')">
-                  <a class="hiv" href="http://localhost:8080/messaging/commenters">FELHASZN.</a></li>
-          </ul>
-      </div>
+      <nav th:include="commentwall :: navbar"></nav>
 
       <form method="POST" data-th-action="@{/messaging/search}" data-th-object="${message}">
         <div class="msgbox-mid">
-          <div>
+          <table>
+            <tr>
+              <td>
+                <select class="slct" data-th-field="*{ct}">
+                  <option data-th-each="limit: ${limits}" data-th-text="${limit.title}"
+                  data-th-value="${limit.topicId}"></option>
+                </select>
+              </td>
+              <td><input class="searchb" type="text" placeholder="Címben" data-th-field="*{ttl}"></td>
+            </tr>
+            <tr>
+              <td><select class="slct"  data-th-field="*{tp}">
+                  <option data-th-each="topic: ${topics}" data-th-text="${topic.title}"
+                  data-th-value="${topic.topicId}"></option>
+               </select></td>
+              <td><input class="searchb" type="text" placeholder="Szövegben" data-th-field="*{tx}"></td>
+            </tr>
+            <tr data-sec-authorize="hasRole('DIRECTOR')">
+              <td><select class="slct"  data-th-field="*{del}">
+                  <option data-th-each="filter: ${filters}" data-th-text="${filter.title}"
+                  data-th-value="${filter.author}"></option></select>
+              </td>
+              <td>
+                <input class="searchb" type="text" placeholder="Névben" data-th-field="*{nm}">
+              </td>
+            </tr>
+            <tr>
+              <td><label for="DESC">Csökkenő sorrend</label>
+              <input type="checkbox" id="DESC" value="desc" data-th-field="*{desc}"></td>
+            </tr>
+          </table>
+          <!--<div>
             <ul class="searchrow">
               <li>
-                <label class="hiv" for="DATUM">DÁTUM</label>
+                <label for="DATUM">Dátum</label>
                 <input type="radio" name="field" id="DATUM" value="1" checked="checked" data-th-field="*{ord}">
               </li>
               <li>
-                <label class="hiv" for="NOMEN">ÍRÓ</label>
+                <label for="NOMEN">Író</label>
                 <input type="radio" name="field" id="NOMEN" value="3" data-th-field="*{ord}">
               </li>
               <li>
-                <label class="hiv" for="TITULUM">CÍM</label>
+                <label for="TITULUM">Cím</label>
                 <input type="radio" name="field" id="TITULUM" value="5" data-th-field="*{ord}">
               </li>
               <li>
-                <label class="hiv" for="DESC">CSÖKKENŐ</label>
+                <label for="DESC">Csökkenő</label>
                 <input type="checkbox" id="DESC" value="desc" data-th-field="*{desc}">
-              </li>
+              </li>-->
               <!--<li>
                 <label class="hiv" for="DIM">FÉL</label>
                 <input type="checkbox" id="DIM" value="desc" data-th-field="*{ct}">
               </li>-->
-            </ul>
+            <!--</ul>
             <ul class="searchrow">
               <li>
-                <label class="hiv" for="N1">50</label>
+                <label for="N1">50</label>
                 <input type="radio" name="numer" id="N1" value="0" checked="checked" data-th-field="*{ct}">
               </li>
               <li>
-                <label class="hiv" for="N2">150</label>
+                <label for="N2">150</label>
                 <input type="radio" name="numer" id="N2" value="1" data-th-field="*{ct}">
               </li>
               <li>
-                <label class="hiv" for="N3">450</label>
+                <label for="N3">450</label>
                 <input type="radio" name="numer" id="N3" value="2" data-th-field="*{ct}">
               </li>
               <li>
-                <label class="hiv" for="N4">900</label>
+                <label for="N4">900</label>
                 <input type="radio" name="numer" id="N4" value="3" data-th-field="*{ct}">
               </li>
             </ul>
-            <ul class="searchrow" data-sec-authorize="hasRole('ADMIN')">
+            <ul class="searchrow" data-sec-authorize="hasRole('DIRECTOR')">
               <li>
-                <label class="hiv" for="TOTUM">MIND</label>
+                <label for="TOTUM">Mind</label>
                 <input type="radio" name="delet" id="TOTUM" value="no" checked="checked" data-th-field="*{del}">
               </li>
               <li>
-                <label class="hiv" for="UNDEL">CSAK TÖRLETLEN</label>
+                <label for="UNDEL">Csak törletlen</label>
                 <input type="radio" name="delet" id="UNDEL" value="" data-th-field="*{del}">
               </li>
               <li>
-                <label class="hiv" for="DEL">CSAK TÖRÖLT</label>
+                <label for="DEL">Csak törölt</label>
                 <input type="radio" name="delet" id="DEL" value="yes" data-th-field="*{del}">
               </li>
             </ul>
           </div>
-            <!--<div class="newmsg">
-
-                <select class="slct"  data-th-field="*{tp}">
-                    <option data-th-each="topic: ${message.topics}" data-th-text="${topic}" data-th-value="${topic}"></option>
-                </select>
-            </div>-->
           <div class="newmsg">
-              <select class="slct"  data-th-field="*{tp}">
-                  <option data-th-each="topic: ${topics}" data-th-text="${topic.title}" data-th-value="${topic.topicId}"></option>
+             <select class="slct"  data-th-field="*{tp}">
+                 <option data-th-each="topic: ${topics}" data-th-text="${topic.title}" data-th-value="${topic.topicId}"></option>
               </select>
           </div>
           <div class="searchrow">
             <input class="searchb" type="text" placeholder="Névben" data-th-field="*{nm}">
             <input class="searchb" type="text" placeholder="Szövegben" data-th-field="*{tx}">
-          </div>
+          </div>-->
         </div>
         <div class="msgbox">
           <div class="newmsg">
-            <input type="submit" value="KÜLD"/>
+            <input type="submit" value="Küld"/>
           </div>
         </div>
       </form>

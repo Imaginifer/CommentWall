@@ -5,6 +5,7 @@
  */
 package com.imaginifer.mess.service;
 
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,24 +22,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Configuration
+@EnableCaching
 public class WebSecConfig extends WebSecurityConfigurerAdapter{
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().formLogin()
+        http.formLogin()
                 .defaultSuccessUrl("/messaging", true)
                 .loginPage("/messaging/login")
                 .permitAll()    
                 .and().logout()         
                 .logoutSuccessUrl("/messaging")
                 .and().authorizeRequests()
-                .antMatchers("/messaging").permitAll()  
-                .antMatchers("/messaging/register").permitAll()
-                .antMatchers("/messaging/search").permitAll()
-                .antMatchers("/messaging/thr/*","messaging/res/*","messaging/msg/*").permitAll()
-                .antMatchers("/messaging/problem", "/messaging/valid").permitAll()
-                .antMatchers("/css/*","/js/*").permitAll() 
-                .antMatchers("/messaging/delete").access("hasRole('ADMIN')") 
+                .antMatchers("/messaging","/messaging/register","/messaging/search",
+                        "/messaging/res","/messaging/thr/*","/messaging/msg/*",
+                        "/messaging/problem", "/messaging/valid").permitAll()  
+                .antMatchers("/css/*","/js/*","/fonts/*", "/img/*").permitAll() 
+                .antMatchers("/messaging/delete", "/messaging/reports","/messaging/sanction",
+                        "/messaging/sanction/*").access("hasRole('DIRECTOR')") 
                 .anyRequest().authenticated(); 
                 
     }

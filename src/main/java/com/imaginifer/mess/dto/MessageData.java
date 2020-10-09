@@ -19,9 +19,11 @@ public class MessageData {
     @Size(min=1, message="Több betű kell!")
     private String text;
     private List<String> topics=new ArrayList<>();
-    private int chosenTopic;
-    private String newTopic;
-    private int replied = 0;
+    private long chosenTopic;
+    private String newTopic = "";
+    private long replied = 0;
+    private long forumId = 0;
+    private boolean notUpdating = true;
 
     public String getText() {
         return text;
@@ -35,11 +37,11 @@ public class MessageData {
         return topics;
     }
 
-    public int getChosenTopic() {
+    public long getChosenTopic() {
         return chosenTopic;
     }
 
-    public void setChosenTopic(int chosenTopic) {
+    public void setChosenTopic(long chosenTopic) {
         this.chosenTopic = chosenTopic;
     }
 
@@ -55,17 +57,35 @@ public class MessageData {
         this.topics=topics;
     }
 
-    public int getReplied() {
+    public long getReplied() {
         return replied;
     }
 
-    public void setReplied(int replied) {
+    public void setReplied(long replied) {
         this.replied = replied;
     }
     
     public boolean isResponse(){
         return replied != 0;
     }
+
+    public boolean isNotUpdating() {
+        return notUpdating;
+    }
+
+    public void setNotUpdating(boolean notUpdating) {
+        this.notUpdating = notUpdating;
+    }
+
+    public long getForumId() {
+        return forumId;
+    }
+
+    public void setForumId(long forumId) {
+        this.forumId = forumId;
+    }
+    
+    
     
     
    

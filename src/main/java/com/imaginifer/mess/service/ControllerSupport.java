@@ -12,6 +12,9 @@ import com.imaginifer.mess.entity.Message;
 import com.imaginifer.mess.dto.TopicView;
 import com.imaginifer.mess.dto.CommenterView;
 import com.imaginifer.mess.dto.MessageView;
+import com.imaginifer.mess.numeralconv.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -24,9 +27,15 @@ public class ControllerSupport {
         List<MessageView> view = new ArrayList<>();
         for (Message m : x) {
             view.add(new MessageView(m.getCommenter().getUsername(), 
-                    m.isDeleted()? "[TÖRÖLT] "+m.getText():m.getText(), m.getFormattedDate(),
-                    m.getMsgId(), m.getNrInTopic(), m.isDeleted(), m.getTopic().getTitle()
-                    , m.isReply()?m.getReplyTo().getMsgId():0));
+                    m.isDeleted()? "[TÖRÖLT] "+m.getText():m.getText(), 
+                    customFormattedDate(m.getDate()),
+                    m.getIdent(), m.getMsgId(), 
+                    romanizedNumber(m.getNrInTopic()), 
+                    m.isDeleted(), 
+                    m.getTopic().getTitle(), 
+                    m.getTopic().getTopicId(), 
+                    m.isReply()?romanizedNumber(m.getReplyTo().getNrInTopic()):"",
+                    m.isReply()?m.getReplyTo().getMsgId():0));
         }
         return view;
     }
@@ -36,7 +45,8 @@ public class ControllerSupport {
         for (Object[] o : x) {
             Topic t = (Topic) o[0];
             long l = (Long) o[1];
-            view.add(new TopicView(t.getTopicId(), t.getAuthor(), t.getTitle(), l));
+            view.add(new TopicView(t.getTopicId(), t.getText(), t.getTitle(), l, 
+                    customFormattedDate(t.getLastUpdate())));
         }
         return view;
     }
@@ -44,10 +54,52 @@ public class ControllerSupport {
     public static List<CommenterView> convertCommenter(List<Commenter> x){
         List<CommenterView> view = new ArrayList<>();
         for (Commenter c : x) {
-            view.add(new CommenterView(c.getUsername(), c.getId(), c.isAdmin()
-                    , c.getFormattedJoinDate()));
+            view.add(new CommenterView(c.getUsername(), c.getCommenterId(), c.isDirector()
+                    , customFormattedDate(c.getJoinDate())));
         }
         return view;
+    }
+    
+    private static String customFormattedDate(LocalDateTime t){
+        String s = String.join(". ", new String[] {String.valueOf(t.getYear()), 
+            romanizedNumber(t.getMonthValue()), String.valueOf(t.getDayOfMonth())}); 
+        return s+". "+t.toLocalTime().format(DateTimeFormatter.ofPattern("H:mm:ss"));
+    }
+    
+    private static String romanizedNumber(long nr){
+        String s = "";
+        try {
+            s = NumeralConverter.romanize(nr);
+        } catch (NumeralConvException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return s;
+    }
+    
+    public static List<TopicView> listOfSearchLimits(){
+        List<TopicView> result = new ArrayList<>();
+        result.add(new TopicView(0, "50 találatig"));
+        result.add(new TopicView(1, "150 találatig"));
+        result.add(new TopicView(2, "450 találatig"));
+        result.add(new TopicView(3, "900 találatig"));
+        return result;
+    }
+
+    public static List<TopicView> listOfOrderings(){
+        List<TopicView> result = new ArrayList<>();
+        result.add(new TopicView(0, "Létrehozás"));
+        result.add(new TopicView(1, "Frissítés"));
+        result.add(new TopicView(3, "Üzenetek"));
+        result.add(new TopicView(5, "Cím"));
+        return result;
+    }
+
+    public static List<TopicView> listOfStatus(){
+        List<TopicView> result = new ArrayList<>();
+        result.add(new TopicView("no", "Mind"));
+        result.add(new TopicView("", "Csak törletlen"));
+        result.add(new TopicView("yes", "Csak törölt"));
+        return result;
     }
     
     public static String searchUrl(Carrier cr) {
