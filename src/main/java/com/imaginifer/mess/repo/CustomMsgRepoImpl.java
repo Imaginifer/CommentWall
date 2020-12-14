@@ -7,6 +7,7 @@ package com.imaginifer.mess.repo;
 
 import com.imaginifer.mess.entity.Message;
 import com.imaginifer.mess.entity.Message_;
+import com.imaginifer.mess.entity.MsgCounter;
 import com.imaginifer.mess.entity.Topic_;
 import java.util.*;
 import javax.persistence.*;
@@ -101,6 +102,17 @@ public class CustomMsgRepoImpl {
         cq.select(ms).distinct(true).where(pred.toArray(new Predicate[pred.size()]))
                 .orderBy(cb.asc(ms.get(Message_.msgId)));
         return em.createQuery(cq).getResultList();
+    }
+    
+    public void newMessageCounter(MsgCounter pc){
+        em.persist(pc);
+    }
+    
+    public List<MsgCounter> getMessageCounter(long commenterId, long forumId){
+        List<MsgCounter> x = em.createQuery("select m from MsgCounter m where m.commenter.commenterId = :c and m.forum.forumId = :f")
+                .setParameter("c", commenterId)
+                .setParameter("f", forumId).getResultList();
+        return x;
     }
     
     

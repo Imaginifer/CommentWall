@@ -51,7 +51,7 @@ public class AutoTasks {
         if (ref.isBefore(present.minusHours(6))){
             ref = present;
             removeExpiredPasses(present);
-            removeExpiredSanctions(present);
+            expireSanctions(present);
             removeUnactivatedAccounts(present);
         }
     }
@@ -134,12 +134,13 @@ public class AutoTasks {
         }
     }
     
-    private void removeExpiredSanctions(LocalDateTime when){
+    private void expireSanctions(LocalDateTime when){
         List<Sanction> sanctions = cr.getAllSanctions();
         if(!sanctions.isEmpty()){
             for (Sanction s : sanctions) {
                 if(s.getExpires().isBefore(when)){
-                    cr.deleteSanction(s);
+                    //cr.deleteSanction(s);
+                    s.setValid(false);
                 }
             }
         }

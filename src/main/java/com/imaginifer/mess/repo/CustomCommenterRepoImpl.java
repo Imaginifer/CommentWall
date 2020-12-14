@@ -6,13 +6,17 @@
 package com.imaginifer.mess.repo;
 
 import com.imaginifer.mess.entity.Commenter;
+import com.imaginifer.mess.entity.Muting;
+import com.imaginifer.mess.entity.Nominee;
 import com.imaginifer.mess.entity.Pass;
 import com.imaginifer.mess.entity.Permit;
+import com.imaginifer.mess.entity.Referendum;
 import com.imaginifer.mess.entity.Sanction;
 //import com.imaginifer.mess.entity.Commenter_;
 //import com.imaginifer.mess.entity.Permit_;
 import java.util.*;
 import javax.persistence.*;
+import org.hibernate.annotations.QueryHints;
 //import javax.persistence.criteria.*;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Repository;
@@ -125,5 +129,49 @@ public class CustomCommenterRepoImpl {
     
     public void newSanction(Sanction s){
         em.persist(s);
+    }
+    
+    public Sanction findSanction(long id){
+        return em.find(Sanction.class, id);
+    }
+    
+    public Nominee findNomineeById(long id){
+        return em.find(Nominee.class, id);
+    }
+    
+    public Referendum getReferendumWithVotes(long refId){
+        EntityGraph eg = em.getEntityGraph("loadWithVoters");
+        return (Referendum) em.createQuery("select r from Referendum r where r.referendumId = :id")
+                .setParameter("id", refId).setHint(QueryHints.LOADGRAPH, eg).getSingleResult();
+    }
+    
+    public void newReferendum(Referendum r){
+        em.persist(r);
+    }
+    
+    public Referendum getReferendum(long refId){
+        return em.find(Referendum.class, refId);
+    }
+    
+    public List<Referendum> getAllOpenReferendums(){
+        return em.createQuery("select r from Referendum r where r.closed = false order by r.creationDate")
+                .getResultList();
+    }
+    
+    public void newMuting(Muting m){
+        em.persist(m);
+    }
+    
+    public void removeMuting(Muting m){
+        em.remove(m);
+    }
+    
+    public Muting findMuting(long mutingId){
+        return em.find(Muting.class, mutingId);
+    }
+    
+    public List<Muting> listCommentersMutings(long commenterId){
+        return em.createQuery("select m from Muting m where m.whoMutes.commenterId = :i order by m.mutingId desc")
+                .setParameter(0, commenterId).getResultList();
     }
 }

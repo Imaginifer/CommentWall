@@ -8,7 +8,6 @@ package com.imaginifer.mess.controller;
 import com.imaginifer.mess.dto.PageView;
 import com.imaginifer.mess.dto.RegData;
 import com.imaginifer.mess.service.CommenterService;
-import com.imaginifer.mess.service.ControllerSupport;
 import com.imaginifer.mess.service.MailingService;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +67,7 @@ public class SecurityCtrl {
         if(!id.isEmpty()){
             cs.promoteOrDemote(id);
         }
-        mod.addAttribute("users", ControllerSupport.convertCommenter(cs.listCommenters()));
+        mod.addAttribute("users", cs.listCommenters());
         mod.addAttribute("cim", new PageView("Felhasználók"));
         return "front.html";
     }

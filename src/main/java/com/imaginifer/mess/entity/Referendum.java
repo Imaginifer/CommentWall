@@ -18,6 +18,8 @@ import org.hibernate.annotations.FetchMode;
  */
 
 @Entity
+@NamedEntityGraph(name = "loadWithVoters", 
+        attributeNodes = @NamedAttributeNode(value ="voted"))
 public class Referendum implements Serializable{
     
     @Id

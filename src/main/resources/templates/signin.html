@@ -5,7 +5,7 @@
     <div class="container">
       <nav th:include="commentwall :: navbar"></nav>
 
-        <form method="POST" data-th-action="@{/messaging/login}" >
+        <form method="POST" autocomplete="off" data-th-action="@{/messaging/login}" >
             <div class="msgbox-mid">
               <div class="searchrow">
                 <input name="username" class="searchb" type="text" placeholder="Név">

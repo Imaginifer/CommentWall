@@ -7,7 +7,7 @@ package com.imaginifer.mess.service;
 
 import com.imaginifer.mess.entity.Commenter;
 import com.imaginifer.mess.entity.Sanction;
-import com.imaginifer.mess.enums.SanctionType;
+import com.imaginifer.mess.enums.*;
 import java.util.List;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
@@ -55,7 +55,12 @@ public class WebUtilService {
     }
     
     public Commenter getCurrentUser(){
-        return (Commenter)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (userHasLoggedIn()){
+            return (Commenter)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        } else {
+            return null;
+        }
+        
     }
     
     private String getRequestIP(){
@@ -74,50 +79,47 @@ public class WebUtilService {
         return Integer.toHexString(Math.abs(getRequestIP().hashCode()));
     }
     
-    public boolean isAllowedHere(long location){
-        if(!userHasLoggedIn()){
-            return false;
-        }
-        Set<Sanction> bans = getCurrentUser().getSanctions();
-        if(bans.isEmpty()){
-            return true;
-        }
-        for (Sanction b : bans) {
-            if(b.getType() == SanctionType.EXILE 
-                    && b.getSanctionScope() == null || b.getSanctionScope().getForumId() == location){
-                return false;
+    public boolean isSanctionedHere(SanctionType sanction, long location){
+        if(userHasLoggedIn()){
+            Set<Sanction> sanctions = getCurrentUser().getSanctions();
+            if(!sanctions.isEmpty()){
+                return sanctions.stream().anyMatch(s -> (s.isValid() 
+                        && s.getType() == sanction && (s.getSanctionScope() == null 
+                        || s.getSanctionScope().getForumId() == location)));
             }
         }
-        return true;
+        return false;
     }
     
-    public boolean isInvitedHere(long location){
-        if(userHasLoggedIn()){
-            Set<Sanction> sancions = getCurrentUser().getSanctions();
-            if(!sancions.isEmpty()){
-                for (Sanction s : sancions) {
-                    if(s.getType() == SanctionType.INVITATION
-                            && s.getSanctionScope().getForumId() == location){
-                        return true;
-                    }
+    public boolean isSanctionedHere(Commenter comm, SanctionType sanction, long location){
+        if(comm != null){
+            Set<Sanction> sanctions = comm.getSanctions();
+            if(!sanctions.isEmpty()){
+                return sanctions.stream().anyMatch(s -> (s.isValid() 
+                        && s.getType() == sanction && (s.getSanctionScope() == null 
+                        || s.getSanctionScope().getForumId() == location)));
+            }
+        }
+        return false;
+    }
+    
+    public boolean hasRank(UserRank rank){
+        String s = "ROLE_"+rank.toString();
+        if (userHasLoggedIn()){
+            for (GrantedAuthority auth : SecurityContextHolder.getContext()
+                    .getAuthentication().getAuthorities()) {
+                if(auth.getAuthority().equals(s)){
+                    return true;
                 }
             }
         }
         return false;
     }
     
-    public boolean isModeratorOrAdministratorHere(long location){
-        if(userHasLoggedIn()){
-            Set<Sanction> sanc = getCurrentUser().getSanctions();
-            if(!sanc.isEmpty()){
-                for (Sanction s : sanc) {
-                    if(s.getType() == SanctionType.MODERATOR
-                            || s.getType() == SanctionType.ADMINISTRATOR
-                            && s.getSanctionScope().getForumId() == location){
-                        return true;
-                    }
-                }
-            }
+    public boolean hasRank(Commenter comm, UserRank rank){
+        String s = "ROLE_"+rank.toString();
+        if (comm != null){
+            return comm.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(s));
         }
         return false;
     }

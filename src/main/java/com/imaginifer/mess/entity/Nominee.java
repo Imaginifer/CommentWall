@@ -54,6 +54,10 @@ public class Nominee implements Serializable{
         return referendum;
     }
     
-    
+    public void vote(){
+        if(!closed){
+            votes++;
+        }
+    }
     
 }

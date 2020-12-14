@@ -13,6 +13,7 @@ import com.imaginifer.mess.entity.Topic;
 import com.imaginifer.mess.entity.Message;
 import com.imaginifer.mess.dto.*;
 import com.imaginifer.mess.entity.Forum;
+import com.imaginifer.mess.entity.MsgCounter;
 import com.imaginifer.mess.enums.TopicStatus;
 import com.imaginifer.mess.repo.SearchRepository;
 import java.time.LocalDateTime;
@@ -64,6 +65,7 @@ public class MsgServiceImpl {
         if(tp.getStatus() != TopicStatus.LOCKED && !ms.isNotUpdating()){
             tp.setLastUpdate(current);
         }
+        updateCounter(c, tp.getForum());
         return tp.getTopicId();
     }
 
@@ -210,12 +212,23 @@ public class MsgServiceImpl {
         return msgrepo.getMessageById(msgId).getTopic().getTopicId();
     }
     
+    private void updateCounter(Commenter c, Forum f){
+        List<MsgCounter> x = msgrepo.getMessageCounter(c.getCommenterId(), f.getForumId());
+        if(x.isEmpty()){
+            msgrepo.newMessageCounter(new MsgCounter(c, f));
+        } else {
+            x.get(0).update();
+        }
+    }
+    
     @Transactional(readOnly = false)
     public void newReply(String text, long replied){
         Message m = msgrepo.getMessageById(replied);
         long nr = getNewNrInTopic(m.getTopic().getTopicId());
-        msgrepo.addNew(new Message(wu.getCurrentUser(), text, LocalDateTime.now(),
+        Commenter c = wu.getCurrentUser();
+        msgrepo.addNew(new Message(c, text, LocalDateTime.now(),
                 m.getTopic(), nr, m, wu.getRequestIdent()));
+        updateCounter(c, m.getTopic().getForum());
     }
     
 }

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import javax.persistence.*;
+import static javax.persistence.CascadeType.REMOVE;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
@@ -48,6 +49,8 @@ public class Commenter implements UserDetails, Serializable{
     private Set<Permit> authorities;
     @ManyToMany(mappedBy = "voted")
     private Set<Referendum> votedIn;
+    @OneToMany(cascade = REMOVE, mappedBy = "commenter")
+    private Set<MsgCounter> msgCount;
 
     public Commenter() {
     }
@@ -63,6 +66,7 @@ public class Commenter implements UserDetails, Serializable{
         messages = new ArrayList<>();
         sanctions = new HashSet<>();
         votedIn = new HashSet<>();
+        msgCount = new HashSet<>();
         authorities.add(role);
         activated = true;
         enabled = true;
@@ -78,6 +82,8 @@ public class Commenter implements UserDetails, Serializable{
         authorities = new HashSet<>();
         messages = new ArrayList<>();
         sanctions = new HashSet<>();
+        votedIn = new HashSet<>();
+        msgCount = new HashSet<>();
     }
 
     

@@ -24,15 +24,18 @@ public class Sanction implements Serializable{
     private SanctionType type;
     @ManyToOne(optional = false)
     private Commenter commenter;
+    @ManyToOne(optional = false)
+    private Commenter source;
     @ManyToOne
     private Forum sanctionScope;
     private LocalDateTime created;
     private LocalDateTime expires;
     private boolean valid;
 
-    public Sanction(SanctionType type, Commenter comm, Forum sanctionScope, int duration) {
+    public Sanction(SanctionType type, Commenter comm, Commenter source, Forum sanctionScope, int duration) {
         this.type = type;
         this.commenter = comm;
+        this.source = source;
         this.sanctionScope = sanctionScope;
         this.created = LocalDateTime.now();
         this.expires = LocalDateTime.now().plusHours(duration);
@@ -72,6 +75,10 @@ public class Sanction implements Serializable{
 
     public void setValid(boolean valid) {
         this.valid = valid;
+    }
+
+    public Commenter getSource() {
+        return source;
     }
     
     

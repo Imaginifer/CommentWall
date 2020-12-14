@@ -12,6 +12,8 @@ import com.imaginifer.mess.entity.Message;
 import com.imaginifer.mess.dto.TopicView;
 import com.imaginifer.mess.dto.CommenterView;
 import com.imaginifer.mess.dto.MessageView;
+import com.imaginifer.mess.entity.Muting;
+import com.imaginifer.mess.entity.Referendum;
 import com.imaginifer.mess.numeralconv.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -60,7 +62,24 @@ public class ControllerSupport {
         return view;
     }
     
-    private static String customFormattedDate(LocalDateTime t){
+    public static List<TopicView> convertMuting(List<Muting> x){
+        List<TopicView> view = new ArrayList<>();
+        x.forEach(m -> view.add(new TopicView(m.getMutingId(), customFormattedDate(m.getCreationDate()))));
+        return view;
+    }
+    
+    public static List<TopicView> convertReferendum(Referendum r, boolean detailed){
+        List<TopicView> view = new ArrayList<>();
+        view.add(new TopicView(r.getReferendumId(), r.isClosed()?"Lezárva":null, 
+                r.getTitle(), r.getVoted().size(), customFormattedDate(r.getCreationDate())));
+        if (detailed){
+            r.getNominees().forEach(n -> view.add(new TopicView(n.getNomineeId(), 
+                    null, n.getTitle(), n.getVotes(), null)));
+        }
+        return view;
+    }
+    
+    public static String customFormattedDate(LocalDateTime t){
         String s = String.join(". ", new String[] {String.valueOf(t.getYear()), 
             romanizedNumber(t.getMonthValue()), String.valueOf(t.getDayOfMonth())}); 
         return s+". "+t.toLocalTime().format(DateTimeFormatter.ofPattern("H:mm:ss"));
