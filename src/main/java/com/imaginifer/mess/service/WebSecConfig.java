@@ -5,14 +5,22 @@
  */
 package com.imaginifer.mess.service;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.concurrent.TimeUnit;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 /**
@@ -30,9 +38,21 @@ public class WebSecConfig extends WebSecurityConfigurerAdapter{
         http.formLogin()
                 .defaultSuccessUrl("/messaging", true)
                 .loginPage("/messaging/login")
+                .successHandler((HttpServletRequest hsr, HttpServletResponse hsr1, Authentication a) -> {
+                    String addr = hsr.getHeader("X-FORWARDED-FOR");
+                    addr = addr == null || addr.isEmpty() ? hsr.getRemoteAddr() : addr;
+                    System.out.println("Bejelentkezett: "+ a.getName() + ", cím: "+ addr);
+        }).failureHandler((HttpServletRequest hsr, HttpServletResponse hsr1, AuthenticationException ae) -> {
+            String addr = hsr.getHeader("X-FORWARDED-FOR");
+            addr = addr == null || addr.isEmpty() ? hsr.getRemoteAddr() : addr;
+            System.out.println("Bejelentkezési hiba: " + ae.getMessage() + ", cím: "+ addr);
+        })
                 .permitAll()    
                 .and().logout()         
                 .logoutSuccessUrl("/messaging")
+                .logoutSuccessHandler((HttpServletRequest hsr, HttpServletResponse hsr1, Authentication a) -> {
+                    System.out.println("Kijelentkezett: "+a.getName());
+        })
                 .and().authorizeRequests()
                 .antMatchers("/messaging","/messaging/register","/messaging/search",
                         "/messaging/res","/messaging/thr/*","/messaging/msg/*",
@@ -46,7 +66,17 @@ public class WebSecConfig extends WebSecurityConfigurerAdapter{
     
    
     @Bean
-    public static PasswordEncoder passwordEncoder(){
+    public BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+    
+    @Bean
+    public CacheManager cacheManager(){
+        CaffeineCacheManager c = new CaffeineCacheManager("msg", "reg");
+        c.setCaffeine(Caffeine.newBuilder()
+                .maximumSize(1000)
+                .expireAfterWrite(8, TimeUnit.HOURS));
+        return c;
+    }
+    
 }

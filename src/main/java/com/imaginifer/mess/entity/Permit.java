@@ -5,6 +5,7 @@
  */
 package com.imaginifer.mess.entity;
 
+import com.imaginifer.mess.enums.UserRank;
 import java.util.List;
 import javax.persistence.*;
 import javax.persistence.ManyToMany;
@@ -24,8 +25,8 @@ public class Permit implements GrantedAuthority{
     @ManyToMany(mappedBy="authorities")
     private List<Commenter> commenters;
 
-    public Permit(String role) {
-        this.authority = role;
+    public Permit(UserRank role) {
+        this.authority = role.toString();
     }
 
     public Permit() {

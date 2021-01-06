@@ -7,18 +7,11 @@ package com.imaginifer.mess.service;
 
 import com.imaginifer.mess.dto.CommenterView;
 import com.imaginifer.mess.dto.RegData;
-import com.imaginifer.mess.dto.TopicView;
 import com.imaginifer.mess.entity.Commenter;
-import com.imaginifer.mess.entity.Forum;
-import com.imaginifer.mess.entity.Muting;
-import com.imaginifer.mess.entity.Nominee;
 import com.imaginifer.mess.entity.Pass;
-import com.imaginifer.mess.entity.Referendum;
-import com.imaginifer.mess.entity.Sanction;
-import com.imaginifer.mess.enums.SanctionType;
 import com.imaginifer.mess.enums.UserRank;
 import com.imaginifer.mess.repo.CustomCommenterRepoImpl;
-import com.imaginifer.mess.repo.TopicRepository;
+import com.imaginifer.mess.repo.PassRepository;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.springframework.beans.factory.annotation.*;
@@ -41,19 +34,36 @@ public class CommenterService implements UserDetailsService{
     private final CustomCommenterRepoImpl cr;
     private final PasswordEncoder pwd;
     private final MailingService ms;
-    private final LoginSecurityService ls;
+    private final SecurityService ss;
     private final WebUtilService wu;
-    private final TopicRepository tr;
+    private final PassRepository pr;
     
     @Autowired
     public CommenterService(CustomCommenterRepoImpl ub, PasswordEncoder pwd, 
-            MailingService ms, LoginSecurityService ls, WebUtilService wu, TopicRepository tr) {
+            MailingService ms, SecurityService ss, WebUtilService wu, PassRepository pr) {
         this.cr = ub;
         this.pwd = pwd;
         this.ms = ms;
         this.wu = wu;
-        this.ls = ls;
-        this.tr = tr;
+        this.ss = ss;
+        this.pr = pr;
+    }
+    
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        /*if(ss.isBlocked(wu.getRequestIdent())){
+            throw new UsernameNotFoundException("Túl sokat próbálkozott!");
+        }*/
+        if(ss.isBlocked(wu.getRequestHash())){
+            throw new UsernameNotFoundException("Túl sokat próbálkozott!");
+        }
+        UserDetails user  = cr.loadUserByUsername(username);
+        if (user == null || !user.isAccountNonLocked()){
+            throw new UsernameNotFoundException(user == null ? 
+                    "Ilyen nevű felhasználó nincs!":
+                    "A fiókot felfüggesztették!");
+        }
+        return user;
     }
     
     @Transactional(readOnly = false)
@@ -69,9 +79,9 @@ public class CommenterService implements UserDetailsService{
                 , LocalDateTime.now()/*,ub.getPermitByName("ROLE_USER")*/);
         cr.registerNew(com);
         Pass p = new Pass(com);
-        cr.newPass(p);
+        pr.newPass(p);
         //System.out.println(reg.getName() + " belépőjének száma: " + p.getPassId());
-        ms.sendValidator(reg.getMail(), p.getPassId());
+        ms.sendValidatorLink(reg.getMail(), p.getPassId());
         return 0;
     }
     
@@ -101,24 +111,6 @@ public class CommenterService implements UserDetailsService{
         return ControllerSupport.convertCommenter(cr.listCommenters());
     }
     
-    @Transactional(readOnly = false)
-    public boolean castVote(long nomineeId){
-        if(!wu.hasRank(UserRank.ELECTOR)){
-            return false;
-        }
-        Nominee n = cr.findNomineeById(nomineeId);
-        Referendum r = cr.getReferendumWithVotes(n.getReferendum().getReferendumId());
-        if(!r.isClosed() && r.castVote(wu.getCurrentUser(), nomineeId)){
-            n.vote();
-            return Boolean.TRUE;
-        }
-        return false;
-    }
-    
-    public List<TopicView> displayReferendum(long referendumId){
-        Referendum r = cr.getReferendumWithVotes(referendumId);
-        return ControllerSupport.convertReferendum(r, true);
-    }
     
     @Transactional(readOnly = false)
     public boolean validateCommenter(String activator){
@@ -126,13 +118,13 @@ public class CommenterService implements UserDetailsService{
         long passId;
         try {
             passId = Long.parseLong(activator);
-            p = cr.findPassById(ms.disentangleActivator(passId));
+            p = pr.findOnePassByPassId(ms.disentangleActivator(passId));
             p.getPassId();
         } catch (NumberFormatException | NullPointerException e) {
             return false;
         }
         p.getCommenter().grantAuthority(cr.getPermitByName("ROLE_USER"));
-        cr.deletePass(p);
+        pr.deletePass(p);
         return true;
     }
     
@@ -147,46 +139,5 @@ public class CommenterService implements UserDetailsService{
         return true;
     }
     
-    @Transactional(readOnly = false)
-    public void newSanction(long commenterId, long forumId, SanctionType type, int duration){
-        if(wu.hasRank(UserRank.DIRECTOR) || wu.hasRank(UserRank.SUBJECTOR) 
-                || wu.hasRank(UserRank.ARBITRATOR) 
-                || wu.isSanctionedHere(SanctionType.ADMINISTRATOR, forumId) 
-                || wu.isSanctionedHere(SanctionType.MODERATOR, forumId)){
-            Forum scope = forumId == 0 ? null : tr.getForumById(forumId);
-            Sanction s = new Sanction(type, cr.findCommenterById(commenterId), 
-                    wu.getCurrentUser(), scope, duration);
-            cr.newSanction(s);
-        }
-    }
-    
-    @PreAuthorize("hasRole('DIRECTOR') OR hasRole('ARBITRATOR')")
-    @Transactional(readOnly = false)
-    public void liftSanction(long sanctionId){
-        cr.findSanction(sanctionId).setValid(false);
-    }
-    
-    @Transactional(readOnly = false)
-    public void muteUser(long id){
-        Muting m = new Muting(wu.getCurrentUser(), cr.findCommenterById(id));
-        cr.newMuting(m);
-    }
-    
-    @Transactional(readOnly = false)
-    public void unmuteUser(long mutingId){
-        cr.removeMuting(cr.findMuting(mutingId));
-    }
-    
-    public List<TopicView> listMutings(){
-        return ControllerSupport.convertMuting(cr.listCommentersMutings(wu.getCurrentUser().getCommenterId()));
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        if(ls.isBlocked(wu.getRequestIdent())){
-            throw new RuntimeException("Túl sokat próbálkozott!");
-        }
-        return cr.loadUserByUsername(username);
-    }
     
 }

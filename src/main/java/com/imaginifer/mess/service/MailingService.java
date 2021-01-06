@@ -19,14 +19,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class MailingService {
     
-    private JavaMailSender sender;
-    private CustomCommenterRepoImpl cr;
+    private final JavaMailSender sender;
     private final String cim = "kividrotposta@gmail.com";
 
     @Autowired
-    public MailingService(JavaMailSender sender, CustomCommenterRepoImpl ub) {
+    public MailingService(JavaMailSender sender) {
         this.sender = sender;
-        this.cr = ub;
+        
     }
     
     public void sendSimpleTestMail(){
@@ -38,13 +37,13 @@ public class MailingService {
         sender.send(mail);
     }
     
-    public void sendValidator(String address, long passId){
-        SimpleMailMessage mail = new SimpleMailMessage();
-        mail.setFrom(cim);
-        mail.setTo(address);
-        mail.setSubject("Hitelesítő hivatkozás");
-        mail.setText("http://localhost:8080/messaging/valid?n=" + makeActivator(passId));
-        sender.send(mail);
+    public void sendValidatorLink(String address, long passId){
+        sendSimpleMail(address, "Hitelesítő hivatkozás", 
+                "http://localhost:8080/messaging/valid?n=" + makeActivator(passId));
+    }
+    
+    public void sendSecurityCode(String address, String code){
+        sendSimpleMail(address, "Biztonsági kód", "A biztonsági jelszó: "+code);
     }
     
     private String makeActivator(long ident){
@@ -64,5 +63,14 @@ public class MailingService {
             return 0;
         }
         return Long.parseLong(s);
+    }
+    
+    private void sendSimpleMail(String address, String subject, String text){
+         SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setFrom(cim);
+        mail.setTo(address);
+        mail.setSubject(subject);
+        mail.setText(text);
+        sender.send(mail);
     }
 }

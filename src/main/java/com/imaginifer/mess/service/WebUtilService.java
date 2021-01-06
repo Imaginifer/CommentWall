@@ -8,6 +8,8 @@ package com.imaginifer.mess.service;
 import com.imaginifer.mess.entity.Commenter;
 import com.imaginifer.mess.entity.Sanction;
 import com.imaginifer.mess.enums.*;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
@@ -41,7 +43,7 @@ public class WebUtilService {
         }
         return false;
     }
-
+    
     public String getCurrentUsername(){
         if(userHasLoggedIn()){
             Commenter c = getCurrentUser();
@@ -79,20 +81,12 @@ public class WebUtilService {
         return Integer.toHexString(Math.abs(getRequestIP().hashCode()));
     }
     
-    public boolean isSanctionedHere(SanctionType sanction, long location){
-        if(userHasLoggedIn()){
-            Set<Sanction> sanctions = getCurrentUser().getSanctions();
-            if(!sanctions.isEmpty()){
-                return sanctions.stream().anyMatch(s -> (s.isValid() 
-                        && s.getType() == sanction && (s.getSanctionScope() == null 
-                        || s.getSanctionScope().getForumId() == location)));
-            }
-        }
-        return false;
+    public int getRequestHash(){
+        return getRequestIP().hashCode();
     }
     
     public boolean isSanctionedHere(Commenter comm, SanctionType sanction, long location){
-        if(comm != null){
+        if(comm != null && sanction != null){
             Set<Sanction> sanctions = comm.getSanctions();
             if(!sanctions.isEmpty()){
                 return sanctions.stream().anyMatch(s -> (s.isValid() 
@@ -103,24 +97,31 @@ public class WebUtilService {
         return false;
     }
     
-    public boolean hasRank(UserRank rank){
-        String s = "ROLE_"+rank.toString();
-        if (userHasLoggedIn()){
-            for (GrantedAuthority auth : SecurityContextHolder.getContext()
-                    .getAuthentication().getAuthorities()) {
-                if(auth.getAuthority().equals(s)){
-                    return true;
-                }
+    public boolean isSanctionedHere(Commenter comm, SanctionType[] sanction, long location){
+        if(comm != null && sanction != null && sanction.length > 0){
+            Set<Sanction> sanctions = comm.getSanctions();
+            Set<SanctionType> types = new HashSet<>(Arrays.asList(sanction));
+            if(!sanctions.isEmpty()){
+                return sanctions.stream().anyMatch(s -> (s.isValid() 
+                        && types.contains(s.getType()) && (s.getSanctionScope() == null 
+                        || s.getSanctionScope().getForumId() == location)));
             }
         }
         return false;
     }
     
-    public boolean hasRank(Commenter comm, UserRank rank){
-        String s = "ROLE_"+rank.toString();
-        if (comm != null){
-            return comm.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(s));
-        }
-        return false;
+    public boolean hasRank(Commenter c, UserRank rank){
+        return c == null || rank == null ? false : c.getAuthorities().stream()
+                .anyMatch(a -> UserRank.valueOf(a.getAuthority()) == rank);
     }
+    
+    public boolean hasRank(Commenter c, UserRank[] ranks){
+        if(c == null || ranks == null || ranks.length == 0){
+            return false;
+        }
+        Set<UserRank> x = new HashSet<>(Arrays.asList(ranks));
+        return c.getAuthorities().stream()
+                .anyMatch(a -> x.contains(UserRank.valueOf(a.getAuthority())));
+    }
+    
 }

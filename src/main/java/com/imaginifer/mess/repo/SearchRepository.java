@@ -48,17 +48,8 @@ public class SearchRepository {
             Predicate p = cb.like(ms.get(Message_.topic).get(Topic_.title), "%" + title + "%");
             pred.add(p);
         }
-        switch (deleted) {
-            case 2:
-                Predicate p1 = cb.equal(ms.get(Message_.deleted), true);
-                pred.add(p1);
-                break;
-            case 1:
-                break;
-            default:
-                Predicate p = cb.equal(ms.get(Message_.deleted), false);
-                pred.add(p);
-                break;
+        if(deleted != 1){
+            pred.add(cb.equal(ms.get(Message_.deleted), deleted == 2));
         }
         
         cq.select(ms).distinct(true).where(pred.toArray(new Predicate[pred.size()]));

@@ -18,7 +18,7 @@ public class MsgCounter implements Serializable{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long postCounterId;
+    private long msgCounterId;
     @ManyToOne(optional = false)
     private Commenter commenter;
     @ManyToOne(optional = false)
@@ -36,8 +36,8 @@ public class MsgCounter implements Serializable{
     public MsgCounter() {
     }
 
-    public long getPostCounterId() {
-        return postCounterId;
+    public long getMsgCounterId() {
+        return msgCounterId;
     }
 
     public Commenter getCommenter() {

@@ -9,10 +9,6 @@ package com.imaginifer.mess.enums;
  *
  * @author imaginifer
  */
-public enum UserRank {
-    ROLE_USER,
-    ROLE_ELECTOR,
-    ROLE_ARBITRATOR,
-    ROLE_SUBJECTOR,
-    ROLE_DIRECTOR
+public enum Felony {
+    SHITPOSTING, ENDANGERMENT, PSYCHOPATHY, IMPERSONATION, CRIMINALITY
 }

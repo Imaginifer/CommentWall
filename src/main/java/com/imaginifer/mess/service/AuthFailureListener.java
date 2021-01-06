@@ -17,18 +17,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthFailureListener implements ApplicationListener<AuthenticationFailureBadCredentialsEvent> {
 
-    private final LoginSecurityService srv;
+    private final SecurityService srv;
     private final WebUtilService wu;
 
     @Autowired
-    public AuthFailureListener(LoginSecurityService srv, WebUtilService wu) {
+    public AuthFailureListener(SecurityService srv, WebUtilService wu) {
         this.srv = srv;
         this.wu = wu;
     }
     
     @Override
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent event) {
-        srv.loginFail(wu.getRequestIdent());
+        //srv.loginFail(wu.getRequestIdent());
+        srv.loginFail(wu.getRequestHash());
     }
     
 }

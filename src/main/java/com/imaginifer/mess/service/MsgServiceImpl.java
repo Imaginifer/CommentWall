@@ -213,11 +213,11 @@ public class MsgServiceImpl {
     }
     
     private void updateCounter(Commenter c, Forum f){
-        List<MsgCounter> x = msgrepo.getMessageCounter(c.getCommenterId(), f.getForumId());
-        if(x.isEmpty()){
+        MsgCounter x = msgrepo.getMessageCounter(c.getCommenterId(), f.getForumId());
+        if(x == null){
             msgrepo.newMessageCounter(new MsgCounter(c, f));
         } else {
-            x.get(0).update();
+            x.update();
         }
     }
     

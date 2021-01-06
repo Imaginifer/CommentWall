@@ -20,16 +20,16 @@ public class Pass implements Serializable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long passId;
     private LocalDateTime created;
-    @OneToOne(optional = false)
+    @OneToOne//(optional = false)
     private Commenter commenter;
-    private int validator;
+    private String validator;
 
     public Pass(Commenter comm) {
         this.commenter = comm;
         this.created = LocalDateTime.now();
     }
     
-    public Pass(int validator){
+    public Pass(String validator){
         this.validator = validator;
         this.created = LocalDateTime.now();
     }
@@ -57,11 +57,11 @@ public class Pass implements Serializable{
         return passId;
     }
 
-    public int getValidator() {
+    public String getValidator() {
         return validator;
     }
 
-    public void setValidator(int validator) {
+    public void setValidator(String validator) {
         this.validator = validator;
     }
     

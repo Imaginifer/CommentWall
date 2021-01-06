@@ -14,6 +14,7 @@ import javax.persistence.*;
 import javax.persistence.criteria.*;
 import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Repository;
+import org.springframework.cache.annotation.Cacheable;
 
 /**
  *
@@ -49,7 +50,7 @@ public class CustomMsgRepoImpl {
     /*public void addNewReply(String name, String text, Topic topic, Message original){
         em.persist(new Message(name, text, LocalDateTime.now(), topic, original));
     }*/
-    
+    @Cacheable
     public List<Message> pickWithReplies(long id){
         EntityGraph eg = em.getEntityGraph("loadWithReplies");
         List<Message> x = em.createQuery("select m from Message m where m.msgId = :i order by m.msgId")
@@ -89,6 +90,7 @@ public class CustomMsgRepoImpl {
         return em.createQuery(cq).getSingleResult();
     }
     
+    @Cacheable(cacheNames = "msg")
     public List<Message> displayTopic(long topicId, boolean showDeleted){
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Message> cq = cb.createQuery(Message.class);
@@ -108,11 +110,10 @@ public class CustomMsgRepoImpl {
         em.persist(pc);
     }
     
-    public List<MsgCounter> getMessageCounter(long commenterId, long forumId){
-        List<MsgCounter> x = em.createQuery("select m from MsgCounter m where m.commenter.commenterId = :c and m.forum.forumId = :f")
+    public MsgCounter getMessageCounter(long commenterId, long forumId){
+        return (MsgCounter) em.createQuery("select m from MsgCounter m where m.commenter.commenterId = :c and m.forum.forumId = :f")
                 .setParameter("c", commenterId)
-                .setParameter("f", forumId).getResultList();
-        return x;
+                .setParameter("f", forumId).getSingleResult();
     }
     
     

@@ -129,7 +129,7 @@ public class Commenter implements UserDetails, Serializable{
 
     @Override
     public boolean isAccountNonLocked() {
-        return !sanctions.stream().anyMatch(s -> (s.isValid() && s.getType() == SanctionType.EXILE 
+        return sanctions.stream().noneMatch(s -> (s.isValid() && s.getType() == SanctionType.EXILE 
                 && s.getSanctionScope() == null));
     }
 

@@ -17,18 +17,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthSuccessListener implements ApplicationListener<AuthenticationSuccessEvent> {
 
-    private final LoginSecurityService srv;
+    private final SecurityService srv;
     private final WebUtilService wu;
 
     @Autowired
-    public AuthSuccessListener(LoginSecurityService srv, WebUtilService wu) {
+    public AuthSuccessListener(SecurityService srv, WebUtilService wu) {
         this.srv = srv;
         this.wu = wu;
     }
     
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
-        srv.loginSuccess(wu.getRequestIdent());
+        //srv.loginSuccess(wu.getRequestIdent());
+        srv.loginSuccess(wu.getRequestHash());
     }
     
 }
