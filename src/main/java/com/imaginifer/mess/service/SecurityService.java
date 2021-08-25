@@ -68,7 +68,7 @@ public class SecurityService {
     //SQL változat
     @Transactional
     public void loginSuccess(int addr){
-        RequestLog r = rqr.findOneRequestLogByAddresHash(addr);
+        RequestLog r = rqr.findOneRequestLogByAddressHash(addr);
         if (r != null){
             r.setLoginAttempts(0);
         }
@@ -77,9 +77,9 @@ public class SecurityService {
     //SQL változat
     @Transactional
     public void loginFail(int addr){
-        RequestLog r = rqr.findOneRequestLogByAddresHash(addr);
+        RequestLog r = rqr.findOneRequestLogByAddressHash(addr);
         if(r == null){
-            rqr.newRequestLog(new RequestLog(addr));
+            rqr.save(new RequestLog(addr));
         } else {
             r.newLoginFailure();
         }
@@ -87,14 +87,14 @@ public class SecurityService {
     
     //SQL változat
     public boolean isBlocked(int addr){
-        RequestLog r = rqr.findOneRequestLogByAddresHash(addr);
+        RequestLog r = rqr.findOneRequestLogByAddressHash(addr);
         return r == null || r.getLoginAttempts() >= upperLimit;
     }
     
     @Transactional
     public long createRegistryPass(){
         Pass p = new Pass(makeValidator());
-        pr.newPass(p);
+        pr.save(p);
         return p.getPassId();
     }
     

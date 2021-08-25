@@ -79,7 +79,7 @@ public class CommenterService implements UserDetailsService{
                 , LocalDateTime.now()/*,ub.getPermitByName("ROLE_USER")*/);
         cr.registerNew(com);
         Pass p = new Pass(com);
-        pr.newPass(p);
+        pr.save(p);
         //System.out.println(reg.getName() + " belépőjének száma: " + p.getPassId());
         ms.sendValidatorLink(reg.getMail(), p.getPassId());
         return 0;
@@ -99,9 +99,9 @@ public class CommenterService implements UserDetailsService{
         }
         
         if(c.isDirector()){
-            c.removeAuthority(cr.getPermitByName("ROLE_DIRECTOR"));
+            c.removeAuthority(cr.getPermitByName(UserRank.ROLE_DIRECTOR));
         }else{
-            c.grantAuthority(cr.getPermitByName("ROLE_DIRECTOR"));
+            c.grantAuthority(cr.getPermitByName(UserRank.ROLE_DIRECTOR));
         }
         return true;
     }
@@ -123,8 +123,8 @@ public class CommenterService implements UserDetailsService{
         } catch (NumberFormatException | NullPointerException e) {
             return false;
         }
-        p.getCommenter().grantAuthority(cr.getPermitByName("ROLE_USER"));
-        pr.deletePass(p);
+        p.getCommenter().grantAuthority(cr.getPermitByName(UserRank.ROLE_USER));
+        pr.delete(p);
         return true;
     }
     

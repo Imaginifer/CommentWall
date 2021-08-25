@@ -16,10 +16,8 @@ import org.springframework.stereotype.Repository;
  * @author imaginifer
  */
 @Repository
-public interface MutingRepository extends JpaRepository<Long, Muting>{
+public interface MutingRepository extends JpaRepository<Muting, Long>{
     
-    public void newMuting(Muting muting);
-    public void deleteMuting(Muting muting);
     public Muting findOneMutingByMutingId(long mutingId);
     @Query("select m from Muting m where m.whoMutes.commenterId = : i order by m.mutingId desc")
     public List<Muting> findAllMutingsByCommenterId(@Param("i") long commenterId);

@@ -14,10 +14,8 @@ import org.springframework.stereotype.Repository;
  * @author imaginifer
  */
 @Repository
-public interface NomineeRepository extends JpaRepository<Long, Nominee>{
+public interface NomineeRepository extends JpaRepository<Nominee, Long>{
     
-    public void newNominee(Nominee n);
-    public void deleteNominee(Nominee n);
     public Nominee findFirstNomineeByNomineeId(long nomineeId);
     
 }

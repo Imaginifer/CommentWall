@@ -8,6 +8,7 @@ package com.imaginifer.mess.repo;
 import com.imaginifer.mess.entity.RequestLog;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -15,10 +16,9 @@ import org.springframework.stereotype.Repository;
  * @author imaginifer
  */
 @Repository
-public interface RequestRepository extends JpaRepository<Integer, RequestLog>{
+public interface RequestRepository extends JpaRepository<RequestLog, Integer>{
     
-    public RequestLog findOneRequestLogByAddresHash(int addressHash);
-    public void newRequestLog(RequestLog requestLog);
-    public void deleteRequestLog(RequestLog requestLog);
+    public RequestLog findOneRequestLogByAddressHash(int addressHash);
+    @Query("select r from RequestLog r")
     public List<RequestLog> getAllRequestLogs();
 }

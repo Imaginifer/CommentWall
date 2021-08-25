@@ -32,11 +32,11 @@ public class ControllerSupport {
                     m.isDeleted()? "[TÖRÖLT] "+m.getText():m.getText(), 
                     customFormattedDate(m.getDate()),
                     m.getIdent(), m.getMsgId(), 
-                    romanizedNumber(m.getNrInTopic()), 
+                    m.getNrInTopic(), 
                     m.isDeleted(), 
                     m.getTopic().getTitle(), 
                     m.getTopic().getTopicId(), 
-                    m.isReply()?romanizedNumber(m.getReplyTo().getNrInTopic()):"",
+                    m.isReply()?m.getReplyTo().getNrInTopic():"",
                     m.isReply()?m.getReplyTo().getMsgId():0));
         }
         return view;

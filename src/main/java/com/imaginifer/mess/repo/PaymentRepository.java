@@ -6,7 +6,8 @@
 package com.imaginifer.mess.repo;
 
 import com.imaginifer.mess.entity.Payment;
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -14,10 +15,10 @@ import org.springframework.stereotype.Repository;
  * @author imaginifer
  */
 @Repository
-public interface PaymentRepository extends JpaRepository<Long, Payment>, CustomPaymentRepository{
+public interface PaymentRepository extends JpaRepository<Payment, Long>, CustomPaymentRepository{
     
-    public void newPayment(Payment payment);
-    public void deletePayment(Payment payment);
     public Payment findOnePaymentByPaymentId(long paymentId);
+    @Query("select p from Payment p where p.resolved = false order by p.paymentId")
+    public List<Payment> getAllPendingPayments();
     
 }

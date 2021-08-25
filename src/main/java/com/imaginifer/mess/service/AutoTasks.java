@@ -40,7 +40,7 @@ public class AutoTasks {
     @Scheduled(fixedRate = 900000)
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void runTask(){
-        System.out.println("AutoTasks runTask commenced.");
+        System.out.println("AutoTasks.runTask elindítva.");
         LocalDateTime present = LocalDateTime.now();
         if(ref.getYear() == 1970){
             ds.checkPermits();
@@ -61,7 +61,7 @@ public class AutoTasks {
         List<Pass> passes = pr.getAllPasses();
         if(!passes.isEmpty()){
             passes.stream().filter(p -> p.getCreated()
-                    .isBefore(deadline)).forEach(p -> pr.deletePass(p));
+                    .isBefore(deadline)).forEach(p -> pr.delete(p));
             /*for (Pass p : passes) {
                 if(p.getCreated().isBefore(deadline)){
                     pr.deletePass(p);
@@ -87,7 +87,7 @@ public class AutoTasks {
         List<RequestLog> logs = rq.getAllRequestLogs();
         if(!logs.isEmpty()){
             logs.stream().filter(r -> r.getLastRequest().isBefore(deadline) || r.getLoginAttempts() == 0)
-                    .forEach(r -> rq.deleteRequestLog(r));
+                    .forEach(r -> rq.delete(r));
         }
     }
     

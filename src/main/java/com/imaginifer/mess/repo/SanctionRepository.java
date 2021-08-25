@@ -15,10 +15,9 @@ import org.springframework.stereotype.Repository;
  * @author imaginifer
  */
 @Repository
-public interface SanctionRepository extends JpaRepository<Long, Sanction>{
+public interface SanctionRepository extends JpaRepository<Sanction, Long>{
     
-    public void newSanction(Sanction sanction);
-    public void deleteSanction(Sanction sanction);
     public Sanction findFirstSanctionBySanctionId(long sanctionId);
+    @Query("select s from Sanction s where s.valid = true order by s.sanctionId")
     public List<Sanction> getAllSanctions();
 }

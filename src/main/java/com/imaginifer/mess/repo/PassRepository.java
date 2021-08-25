@@ -8,6 +8,7 @@ package com.imaginifer.mess.repo;
 import com.imaginifer.mess.entity.Pass;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -15,9 +16,9 @@ import org.springframework.stereotype.Repository;
  * @author imaginifer
  */
 @Repository
-public interface PassRepository extends JpaRepository<Long, Pass>{
-    public void newPass(Pass p);
-    public void deletePass(Pass p);
+public interface PassRepository extends JpaRepository<Pass, Long>{
+
     public Pass findOnePassByPassId(long passId);
+    @Query("select p from Pass p order by p.passId")
     public List<Pass> getAllPasses();
 }

@@ -10,6 +10,7 @@ import com.imaginifer.mess.entity.Nominee;
 import com.imaginifer.mess.entity.Pass;
 import com.imaginifer.mess.entity.Permit;
 import com.imaginifer.mess.entity.Referendum;
+import com.imaginifer.mess.enums.UserRank;
 //import com.imaginifer.mess.entity.Commenter_;
 //import com.imaginifer.mess.entity.Permit_;
 import java.util.*;
@@ -44,9 +45,9 @@ public class CustomCommenterRepoImpl {
                 .setParameter("a", "Imaginifer").getSingleResult();
     }
     
-    public Permit getPermitByName(String name){
+    public Permit getPermitByName(UserRank name){
         return (Permit)em.createQuery("select p from Permit p where p.authority = :a")
-                .setParameter("a", name).getSingleResult();
+                .setParameter("a", name.toString()).getSingleResult();
     }
 
     public UserDetails loadUserByUsername(String username){

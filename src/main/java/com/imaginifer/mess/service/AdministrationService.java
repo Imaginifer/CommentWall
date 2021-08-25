@@ -72,7 +72,7 @@ public class AdministrationService {
             Forum scope = forumId == 0 ? null : tr.getForumById(forumId);
             Sanction s = new Sanction(type, cr.findCommenterById(commenterId), 
                     wu.getCurrentUser(), scope, duration);
-            sr.newSanction(s);
+            sr.save(s);
         } else {
             throw new AccessDeniedException("Nincs felhatalmazása!");
         }
@@ -87,14 +87,14 @@ public class AdministrationService {
     @Transactional(readOnly = false)
     public void muteUser(long id){
         Muting m = new Muting(wu.getCurrentUser(), cr.findCommenterById(id));
-        mr.newMuting(m);
+        mr.save(m);
     }
     
     @Transactional(readOnly = false)
     public void unmuteUser(long mutingId){
         Muting m = mr.findOneMutingByMutingId(mutingId);
         if(m != null){
-            mr.deleteMuting(m);
+            mr.delete(m);
         }
     }
     

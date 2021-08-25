@@ -7,7 +7,7 @@ package com.imaginifer.mess.repo;
 
 import com.imaginifer.mess.entity.Marketware;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -15,10 +15,9 @@ import org.springframework.stereotype.Repository;
  * @author imaginifer
  */
 @Repository
-public interface MarketwareRepository extends JpaRepository<Long, Marketware>{
+public interface MarketwareRepository extends JpaRepository<Marketware, Long>{
     
-    public void newMarketware(Marketware m);
-    public void deleteMarketware(Marketware m);
     public Marketware findFirstMarketwareByMarketwareId(long marketwareId);
+    @Query("select m from Marketware m order by m.marketwareId asc")
     public List<Marketware> getAllMarketwares();
 }

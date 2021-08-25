@@ -22,11 +22,11 @@ public class CustomPaymentRepositoryImpl implements CustomPaymentRepository{
 
     @PersistenceContext
     EntityManager em;
-    CriteriaBuilder cb = em.getCriteriaBuilder();
     
     @Override
     public List<Address> getAddresses(long id) {
         
+         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Address> cq = cb.createQuery(Address.class);
         Root<Address> a = cq.from(Address.class);
         
@@ -44,6 +44,7 @@ public class CustomPaymentRepositoryImpl implements CustomPaymentRepository{
     @Override
     public List<Payment> searchPayments(int status, String txid, long commenterId, String currency) {
         
+         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Payment> cq = cb.createQuery(Payment.class);
         Root<Payment> py = cq.from(Payment.class);
         

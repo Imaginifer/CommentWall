@@ -18,10 +18,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReportRepository extends JpaRepository<Report, Long>{
     
-    public void newReport(Report report);
+    //public void newReport(Report report);
     public Report findOneByReportId(long reportId);
-    public void deleteReport(Report report);
-    @Query("select r from Report where r.relevant = true order by r.reportId desc")
+    @Query("select r from Report r where r.relevant = true order by r.reportId desc")
     public List<Report> getAllRelevantReports();
+    @Query("select r from Report r order by r.reportId desc")
     public List<Report> getAllReports();
 }

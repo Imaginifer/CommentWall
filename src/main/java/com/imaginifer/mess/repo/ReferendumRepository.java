@@ -16,13 +16,12 @@ import org.springframework.stereotype.Repository;
  * @author imaginifer
  */
 @Repository
-public interface ReferendumRepository extends JpaRepository<Long, Referendum>{
+public interface ReferendumRepository extends JpaRepository<Referendum, Long>{
     
-    public void newReferendum(Referendum r);
-    public void deleteReferendum(Referendum r);
     public Referendum findFirstReferendumByReferendumId(long referendumId);
     @Query("select r from Referendum r where r.closed = false order by r.creationDate")
     public List<Referendum> getAllOpenReferendums();
     @EntityGraph("loadWithVoters")
+    @Query("select r from Referendum r where r.referendumId = :id")
     public Referendum findFirstReferendumByReferendumIdWithVotes(@Param("id")long referendumId);
 }

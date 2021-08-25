@@ -31,7 +31,7 @@ public class Message implements Serializable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long msgId;
     private boolean deleted;
-    private long nrInTopic;
+    private String nrInTopic;
     @ManyToOne(optional=false)
     private Topic topic;
     @OneToMany(mappedBy = "replyTo")
@@ -39,7 +39,7 @@ public class Message implements Serializable{
     @ManyToOne
     private Message replyTo;
 
-    public Message(Commenter author, String text, LocalDateTime dt, Topic topic, long nrInTopic, String ident) {
+    public Message(Commenter author, String text, LocalDateTime dt, Topic topic, String nrInTopic, String ident) {
         this.commenter = author;
         this.text = text;
         this.date = dt;
@@ -50,7 +50,7 @@ public class Message implements Serializable{
         this.ident = ident;
     }
     
-    public Message(Commenter author, String text, LocalDateTime dt, Topic topic, long nrInTopic, 
+    public Message(Commenter author, String text, LocalDateTime dt, Topic topic, String nrInTopic, 
             Message replyTo, String ident) {
         this.commenter = author;
         this.text = text;
@@ -118,7 +118,7 @@ public class Message implements Serializable{
         return date;
     }
     
-    public long getNrInTopic(){
+    public String getNrInTopic(){
         return this.nrInTopic;
     }
 

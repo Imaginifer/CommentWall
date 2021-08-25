@@ -35,5 +35,18 @@
       </div>
 
     </div>
+    <footer th:fragment="footer">
+      <nav>
+        <ul>
+          <li><a class="hiv">Főöldal</a></li>
+          <li><a class="hiv">Keresés</a></li>
+          <li><a class="hiv">Kapcsolat</a></li>
+          <li><a class="hiv">Rólunk</a></li>
+          <li><a class="hiv">Kiáltvány</a></li>
+          <li><a class="hiv">GYIK</a></li>
+        </ul>
+        <p>Imaginifer Tervezőiroda 2019 - <span th-text="${cim.getYear()}"></span> Minden jog fenntartva.</p>
+      </nav>
+    </footer>
   </body>
 </html>

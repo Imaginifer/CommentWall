@@ -18,8 +18,9 @@ import org.hibernate.annotations.FetchMode;
  */
 
 @Entity
-@NamedEntityGraph(name = "loadWithVoters", 
-        attributeNodes = @NamedAttributeNode(value ="voted"))
+@NamedEntityGraphs(
+        @NamedEntityGraph(name = "loadWithVoters", 
+        attributeNodes = @NamedAttributeNode(value ="voted")))
 public class Referendum implements Serializable{
     
     @Id
@@ -30,7 +31,7 @@ public class Referendum implements Serializable{
     private boolean closed;
     @ManyToOne
     private Commenter initiator;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private Set<Commenter> voted;
     @OneToMany(mappedBy = "referendum", fetch = FetchType.EAGER)
     @Fetch(FetchMode.SELECT)

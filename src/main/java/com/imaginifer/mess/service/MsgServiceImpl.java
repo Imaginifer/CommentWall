@@ -15,6 +15,7 @@ import com.imaginifer.mess.dto.*;
 import com.imaginifer.mess.entity.Forum;
 import com.imaginifer.mess.entity.MsgCounter;
 import com.imaginifer.mess.enums.TopicStatus;
+import com.imaginifer.mess.numeralconv.*;
 import com.imaginifer.mess.repo.SearchRepository;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -59,7 +60,7 @@ public class MsgServiceImpl {
         if(tp.getStatus() == TopicStatus.ARCHIVED){
             return 0;
         }
-        long nr = ms.getNewTopic() == null || ms.getNewTopic().isEmpty()? getNewNrInTopic(tp.getTopicId()):1;
+        String nr = ms.getNewTopic() == null || ms.getNewTopic().isEmpty()? getNewNrInTopic(tp.getTopicId()):"I";
         LocalDateTime current = LocalDateTime.now();
         msgrepo.addNew(new Message(c, ms.getText(), current, tp, nr,wu.getRequestIdent()));
         if(tp.getStatus() != TopicStatus.LOCKED && !ms.isNotUpdating()){
@@ -74,7 +75,7 @@ public class MsgServiceImpl {
         Forum f = topicrepo.getForumById(forumId);
         if (newTitle == null || newTitle.isEmpty()) {
             f.newMessage();
-            return topicrepo.findTopicByTopicId(topicId);
+            return topicrepo.findFirstTopicByTopicId(topicId);
         }
         
         Topic t = new Topic(newTitle, text, f, hidden);
@@ -135,8 +136,15 @@ public class MsgServiceImpl {
         return ct;
     }
     
-    private long getNewNrInTopic(long topicId){
-        return 1+msgrepo.countMessagesInTopic(topicId);
+    private String getNewNrInTopic(long topicId){
+        long nr = 1+msgrepo.countMessagesInTopic(topicId);
+        String res = "N";
+        try {
+            res = NumeralConverter.romanize(nr);
+        } catch (NumeralConvException e) {
+            System.out.println(e.getMessage());
+        }
+        return res;
     }
     
     public List<MessageView> pickMsg(long id, boolean all) {
@@ -205,7 +213,7 @@ public class MsgServiceImpl {
     }
     
     public String getTopicName(long topicId){
-        return topicrepo.findTopicByTopicId(topicId).getTitle();
+        return topicrepo.findFirstTopicByTopicId(topicId).getTitle();
     }
     
     public long getTopicId(long msgId){
@@ -224,7 +232,7 @@ public class MsgServiceImpl {
     @Transactional(readOnly = false)
     public void newReply(String text, long replied){
         Message m = msgrepo.getMessageById(replied);
-        long nr = getNewNrInTopic(m.getTopic().getTopicId());
+        String nr = getNewNrInTopic(m.getTopic().getTopicId());
         Commenter c = wu.getCurrentUser();
         msgrepo.addNew(new Message(c, text, LocalDateTime.now(),
                 m.getTopic(), nr, m, wu.getRequestIdent()));

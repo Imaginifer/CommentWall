@@ -42,10 +42,11 @@ public class WebSecConfig extends WebSecurityConfigurerAdapter{
                     String addr = hsr.getHeader("X-FORWARDED-FOR");
                     addr = addr == null || addr.isEmpty() ? hsr.getRemoteAddr() : addr;
                     System.out.println("Bejelentkezett: "+ a.getName() + ", cím: "+ addr);
-        }).failureHandler((HttpServletRequest hsr, HttpServletResponse hsr1, AuthenticationException ae) -> {
-            String addr = hsr.getHeader("X-FORWARDED-FOR");
-            addr = addr == null || addr.isEmpty() ? hsr.getRemoteAddr() : addr;
-            System.out.println("Bejelentkezési hiba: " + ae.getMessage() + ", cím: "+ addr);
+        })
+                .failureHandler((HttpServletRequest hsr, HttpServletResponse hsr1, AuthenticationException ae) -> {
+                    String addr = hsr.getHeader("X-FORWARDED-FOR");
+                    addr = addr == null || addr.isEmpty() ? hsr.getRemoteAddr() : addr;
+                    System.out.println("Bejelentkezési hiba: " + ae.getMessage() + ", cím: "+ addr);
         })
                 .permitAll()    
                 .and().logout()         
@@ -53,10 +54,11 @@ public class WebSecConfig extends WebSecurityConfigurerAdapter{
                 .logoutSuccessHandler((HttpServletRequest hsr, HttpServletResponse hsr1, Authentication a) -> {
                     System.out.println("Kijelentkezett: "+a.getName());
         })
+                .and().exceptionHandling()
                 .and().authorizeRequests()
                 .antMatchers("/messaging","/messaging/register","/messaging/search",
                         "/messaging/res","/messaging/thr/*","/messaging/msg/*",
-                        "/messaging/problem", "/messaging/valid").permitAll()  
+                        "/messaging/problem", "/error","/messaging/valid").permitAll()  
                 .antMatchers("/css/*","/js/*","/fonts/*", "/img/*").permitAll() 
                 .antMatchers("/messaging/delete", "/messaging/reports","/messaging/sanction",
                         "/messaging/sanction/*").access("hasRole('DIRECTOR')") 
