@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.persistence.*;
+import static javax.persistence.CascadeType.REMOVE;
 
 
 /**
@@ -38,6 +39,8 @@ public class Message implements Serializable{
     private List<Message> replies;
     @ManyToOne
     private Message replyTo;
+    @OneToMany(cascade = REMOVE, mappedBy = "attachedTo")
+    private List<ImageModel> images;
 
     public Message(Commenter author, String text, LocalDateTime dt, Topic topic, String nrInTopic, String ident) {
         this.commenter = author;

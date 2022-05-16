@@ -124,4 +124,25 @@ public class WebUtilService {
                 .anyMatch(a -> x.contains(UserRank.valueOf(a.getAuthority())));
     }
     
+    public UserRank highestRank(Commenter c){
+        UserRank[] r = UserRank.values();
+        UserRank highest = UserRank.ROLE_USER;
+        for (int i = 0; i < r.length; i++) {
+            if(hasRank(c, r[i])){
+                highest = r[i];
+            }  
+        }
+        return highest;
+    }
+    
+    public String commenterStatus(Commenter c){
+        if (!c.isEnabled()){
+            return "Kikapcsolt";
+        }
+        if(!c.isAccountNonLocked()){
+            return "Felfüggesztett";
+        }
+        return "Működő";
+    }
+    
 }

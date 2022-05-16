@@ -38,7 +38,7 @@ public class Sanction implements Serializable{
         this.source = source;
         this.sanctionScope = sanctionScope;
         this.created = LocalDateTime.now();
-        this.expires = LocalDateTime.now().plusHours(duration);
+        this.expires = duration != 0 ? LocalDateTime.now().plusHours(duration) : null;
         this.valid = true;
     }
 

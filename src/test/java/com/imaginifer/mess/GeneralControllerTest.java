@@ -43,6 +43,7 @@ public class GeneralControllerTest {
         msgReturn.add(new MessageView("Commenter1", "Test message no.2", "2018.09.01 15:48:21", "bbb", 7, "II", false, "tests", 1, "I", 5));
         Mockito.when(msg.getMsg(Mockito.anyInt()
                 , Mockito.anyInt()
+                , Mockito.anyInt()
                 , Mockito.anyString()
                 , Mockito.anyString()
                 , Mockito.anyString()

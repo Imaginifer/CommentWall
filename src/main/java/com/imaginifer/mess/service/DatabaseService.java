@@ -50,20 +50,20 @@ public class DatabaseService {
     
     public void addAdmin(){
         if(cr.noDirector()){
-            cr.registerNew(new Commenter("Imaginifer",pwd.encode("pa ss wo rd 12 34"),"address@host.domain"
+            cr.registerNew(new Commenter("Imaginifer",pwd.encode(SecurityDetail.DIR_PWD),SecurityDetail.DIR_ADDR
                     ,LocalDateTime.of(1980, 1, 1, 9, 15),cr.getPermitByName(UserRank.ROLE_DIRECTOR)));
         }
     }
     
     public List<Commenter> fillerUsers(){
         List<Commenter> comm = new ArrayList<>();
-        comm.add(new Commenter("Tank Aranka", pwd.encode("qwertzuiop"), "tankari@citromail.com",
+        comm.add(new Commenter("Tank Aranka", pwd.encode(SecurityDetail.GENERIC_PWD), "tankari@citromail.com",
                 LocalDateTime.of(1980, 1, 2, 12, 15),cr.getPermitByName(UserRank.ROLE_USER)));
-        comm.add(new Commenter("Citad Ella", pwd.encode("qwertzuiop"), "cella@citromail.com",
+        comm.add(new Commenter("Citad Ella", pwd.encode(SecurityDetail.GENERIC_PWD), "cella@citromail.com",
                 LocalDateTime.of(1980, 1, 2, 12, 35),cr.getPermitByName(UserRank.ROLE_USER)));
-        comm.add(new Commenter("Techno Kolos", pwd.encode("qwertzuiop"), "teko@citromail.com",
+        comm.add(new Commenter("Techno Kolos", pwd.encode(SecurityDetail.GENERIC_PWD), "teko@citromail.com",
                 LocalDateTime.of(1980, 1, 2, 14, 45),cr.getPermitByName(UserRank.ROLE_USER)));
-        comm.add(new Commenter("Feles Elek", pwd.encode("qwertzuiop"), "felelek@citromail.com",
+        comm.add(new Commenter("Feles Elek", pwd.encode(SecurityDetail.GENERIC_PWD), "felelek@citromail.com",
                 LocalDateTime.of(1980, 1, 3, 9, 25),cr.getPermitByName(UserRank.ROLE_USER)));
         for (Commenter commenter : comm) {
             cr.registerNew(commenter);

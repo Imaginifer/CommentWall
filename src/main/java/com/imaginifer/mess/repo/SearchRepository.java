@@ -6,6 +6,7 @@
 package com.imaginifer.mess.repo;
 
 import com.imaginifer.mess.entity.*;
+import com.imaginifer.mess.enums.SanctionType;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -24,7 +25,7 @@ public class SearchRepository {
     EntityManager em;
 
     public List<Message> filterMessages(boolean descend, int count, String name, 
-            String text, String title, long topic, int deleted) {
+            List<String> text, String title, long topic, int deleted, int textOption) {
         
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Message> cq = cb.createQuery(Message.class);
@@ -36,9 +37,27 @@ public class SearchRepository {
             Predicate p = cb.like(ms.get(Message_.commenter).get(Commenter_.username), "%" + name + "%");
             pred.add(p);
         }
-        if (!text.isEmpty()) {
-            Predicate p = cb.like(ms.get(Message_.text), "%" + text + "%");
-            pred.add(p);
+        if (text != null && !text.isEmpty()) {
+            
+            List<Predicate> temp = new ArrayList<>(); 
+            text.forEach(tx -> {
+                Predicate p = cb.like(ms.get(Message_.text), "%" + tx + "%");
+                temp.add(p);
+            });
+            
+            switch(textOption){
+                case 1:
+                    Predicate andOption = cb.and(temp.toArray(new Predicate[temp.size()]));
+                    pred.add(andOption);
+                    break;
+                case 2:
+                    Predicate orOption = cb.or(temp.toArray(new Predicate[temp.size()]));
+                    pred.add(orOption);
+                    break;
+                default:
+                    pred.add(temp.get(0));
+                    break;
+            }
         }
         if (topic != 0) {
             Predicate p = cb.equal(ms.get(Message_.topic).get(Topic_.topicId), topic);
@@ -128,7 +147,7 @@ public class SearchRepository {
     }
     //TODO
     public List<Commenter> filterCommenters(int order, int count, String name, 
-            String msgText, String topicTitle, long forum, int sanctioned){ 
+            String msgText, String topicTitle, long forum, SanctionType sanctioning){ 
     //rendezés ident, név szerint, keresés üzenet, topik, fórum ill. szankciók szerint
         return null;
     }

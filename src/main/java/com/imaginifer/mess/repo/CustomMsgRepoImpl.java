@@ -116,6 +116,11 @@ public class CustomMsgRepoImpl {
                 .setParameter("f", forumId).getSingleResult();
     }
     
+    public List<MsgCounter> getMessageCounters(long commenterId){
+        return em.createQuery("select m from MsgCounter m where m.commenter.commenterId = :c order by m.lastPost desc")
+                .setParameter("c", commenterId).getResultList();
+    }
+    
     
     
 }

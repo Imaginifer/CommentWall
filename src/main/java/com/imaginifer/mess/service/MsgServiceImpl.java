@@ -13,19 +13,28 @@ import com.imaginifer.mess.entity.Topic;
 import com.imaginifer.mess.entity.Message;
 import com.imaginifer.mess.dto.*;
 import com.imaginifer.mess.entity.Forum;
+import com.imaginifer.mess.entity.ImageModel;
 import com.imaginifer.mess.entity.MsgCounter;
 import com.imaginifer.mess.enums.TopicStatus;
 import com.imaginifer.mess.numeralconv.*;
+import com.imaginifer.mess.repo.ImageRepository;
 import com.imaginifer.mess.repo.SearchRepository;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.*;
 import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 /**
@@ -40,16 +49,18 @@ public class MsgServiceImpl {
     private final TopicRepository topicrepo;
     private final SearchRepository sr;
     private final WebUtilService wu;
+    private final ImageRepository ir;
 
     
     @Autowired
     public MsgServiceImpl(TopicRepository topicrepo, CustomMsgRepoImpl msgrepo, 
-            WebUtilService wu, SearchRepository sr) {
+            WebUtilService wu, SearchRepository sr, ImageRepository ir) {
         
         this.topicrepo = topicrepo;
         this.msgrepo = msgrepo;
         this.wu = wu;
         this.sr = sr;
+        this.ir = ir;
     }
 
     @Transactional(readOnly = false)
@@ -67,6 +78,7 @@ public class MsgServiceImpl {
             tp.setLastUpdate(current);
         }
         updateCounter(c, tp.getForum());
+        ageTopics(tp.getForum().getForumId());
         return tp.getTopicId();
     }
 
@@ -109,12 +121,16 @@ public class MsgServiceImpl {
         return result;
     }
 
-    public List<MessageView> getMsg(int order, int count, String name,
+    public List<MessageView> getMsg(int order, int count, int textOption, String name,
              String text, String title, long topic, String only) {
         
         int deleted = !only.isEmpty() && wu.isDirector() ? (only.equals("yes") ? 2 : 1) : 0;
+        
         return ControllerSupport.convertMessage(sr.filterMessages(order!=0, countNr(count), 
-                name, text, title, topic, deleted));
+                name, textOption!=0 ? 
+                        TextProcessingSupport.splitText(text, " "):
+                        new ArrayList<>(Arrays.asList(new String[]{text})), 
+                title, topic, deleted, textOption));
     }
     
     public List<MessageView> getTopic(long topic){
@@ -143,8 +159,9 @@ public class MsgServiceImpl {
             res = NumeralConverter.romanize(nr);
         } catch (NumeralConvException e) {
             System.out.println(e.getMessage());
+        } finally {
+           return res;
         }
-        return res;
     }
     
     public List<MessageView> pickMsg(long id, boolean all) {
@@ -237,6 +254,67 @@ public class MsgServiceImpl {
         msgrepo.addNew(new Message(c, text, LocalDateTime.now(),
                 m.getTopic(), nr, m, wu.getRequestIdent()));
         updateCounter(c, m.getTopic().getForum());
+        ageTopics(m.getTopic().getForum().getForumId());
+    }
+    
+    private void ageTopics(long forumId){
+        List<Object[]> topics = topicrepo.displayTopics(forumId);
+        for (int i = 0; i < topics.size(); i++) {
+            Topic t = (Topic) topics.get(i)[0];
+            long countMsg = (Long) topics.get(i)[1];
+            if(t.getStatus() != TopicStatus.PERMANENT && countMsg >= SettingsDetail.MSG_LIMIT){
+                t.setStatus(TopicStatus.LOCKED);
+            }
+            if(i > SettingsDetail.THREAD_LIMIT){
+                t.setStatus(TopicStatus.ARCHIVED);
+            }
+        }
+    }
+    
+    private boolean processImage (MultipartFile img, Message body, boolean spoilered) throws IOException{
+        
+        if(img == null || img.getSize() > (SettingsDetail.MEDIA_MB_LIMIT*1024*1024)){
+            return false;
+        }
+        
+        byte[] fullImage = img.getBytes();
+        byte[] thumbnail = generateThumbnail(fullImage);
+        String name = img.getOriginalFilename();
+        String type = img.getContentType();
+        long fileSize = img.getSize(); //byte!
+        
+        ImageModel res = new ImageModel(Math.round((float)fileSize/1024), spoilered, name, type, body, fullImage, thumbnail);
+        ir.save(res);
+        return true;
+    }
+    
+    private byte[] generateThumbnail(byte[] orig) throws IOException{
+        
+        BufferedImage bi = resizeImage(ImageIO.read(new ByteArrayInputStream(orig)));
+        
+        byte[] res = null;
+        ByteArrayOutputStream x = new ByteArrayOutputStream();
+        ImageIO.write(bi, "jpg", x);
+        x.flush();
+        res = x.toByteArray();
+        return res;
+    }
+    
+    private BufferedImage resizeImage(BufferedImage original){
+        if(original.getHeight() <= SettingsDetail.THUMBNAIL_SIZE 
+                && original.getWidth() <= SettingsDetail.THUMBNAIL_SIZE){
+            return original;
+        }
+        float shrinkRatio = original.getHeight() > original.getWidth() ? 
+                (float) SettingsDetail.THUMBNAIL_SIZE / original.getHeight() : 
+                (float) SettingsDetail.THUMBNAIL_SIZE / original.getWidth();
+        int newHeight = Math.round(original.getHeight()*shrinkRatio);
+        int newWidth = Math.round(original.getWidth()*shrinkRatio);
+        
+        Image x = original.getScaledInstance(newWidth, newHeight, Image.SCALE_DEFAULT);
+        BufferedImage bi = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_BYTE_GRAY);
+        bi.getGraphics().drawImage(x, 0, 0, null);
+        return bi; 
     }
     
 }

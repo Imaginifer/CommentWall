@@ -6,6 +6,7 @@
 package com.imaginifer.mess.repo;
 
 import com.imaginifer.mess.entity.*;
+import com.imaginifer.mess.enums.TopicStatus;
 import java.util.List;
 import javax.persistence.*;
 import org.hibernate.jpa.QueryHints;
@@ -45,8 +46,9 @@ public class CustomTopicRepoImpl implements CustomTopicRepo{
     @Override
     public List<Object[]> displayTopics(long forumId) {
         List<Object[]> resultList = em.createQuery("select m.topic, count(m) from "
-                + "Message m where m.topic.forum.forumId = :i group by m.topic "
-                + "order by m.topic.lastUpdate desc").setParameter("i", forumId).getResultList();
+                + "Message m where m.topic.forum.forumId = :i and m.topic.topicStatus != :f group by m.topic "
+                + "order by m.topic.lastUpdate desc").setParameter("i", forumId)
+                .setParameter("f", TopicStatus.ARCHIVED).getResultList();
         return resultList;
     }
 

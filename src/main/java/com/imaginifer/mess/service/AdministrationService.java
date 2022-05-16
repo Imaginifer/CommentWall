@@ -8,6 +8,7 @@ package com.imaginifer.mess.service;
 import com.imaginifer.mess.dto.TopicView;
 import com.imaginifer.mess.entity.*;
 import com.imaginifer.mess.enums.SanctionType;
+import com.imaginifer.mess.enums.TopicStatus;
 import com.imaginifer.mess.enums.UserRank;
 import com.imaginifer.mess.repo.*;
 import java.util.List;
@@ -67,11 +68,12 @@ public class AdministrationService {
     
     @Transactional(readOnly = false)
     public void newSanction(long commenterId, long forumId, SanctionType type, int duration){
-        if(wu.hasRank(wu.getCurrentUser(), new UserRank[]{UserRank.ROLE_DIRECTOR, UserRank.ROLE_SUBJECTOR, UserRank.ROLE_ARBITRATOR}) 
-                || wu.isSanctionedHere(wu.getCurrentUser(), new SanctionType[]{SanctionType.ADMINISTRATOR,SanctionType.MODERATOR}, forumId)){
+        Commenter enactor = wu.getCurrentUser();
+        if(enactor != null && (wu.hasRank(enactor, SettingsDetail.GLOBAL_ENACTING_RANKS) 
+                || wu.isSanctionedHere(enactor, SettingsDetail.LOCAL_ENACTING_SANCTIONS, forumId))){
             Forum scope = forumId == 0 ? null : tr.getForumById(forumId);
             Sanction s = new Sanction(type, cr.findCommenterById(commenterId), 
-                    wu.getCurrentUser(), scope, duration);
+                    enactor, scope, duration);
             sr.save(s);
         } else {
             throw new AccessDeniedException("Nincs felhatalmazása!");
@@ -101,6 +103,18 @@ public class AdministrationService {
     public List<TopicView> listMutings(){
         List<Muting> x = mr.findAllMutingsByCommenterId(wu.getCurrentUser().getCommenterId());
         return ControllerSupport.convertMuting(x);
+    }
+    
+    @Transactional(readOnly = false)
+    public boolean changeTopicStatus(long topicId, TopicStatus stat){
+        Commenter c = wu.getCurrentUser();
+        Topic t = tr.findFirstTopicByTopicId(topicId);
+        if(t != null && c == null && (wu.hasRank(c, SettingsDetail.GLOBAL_ENACTING_RANKS) 
+                || wu.isSanctionedHere(c, SettingsDetail.LOCAL_ENACTING_SANCTIONS, t.getForum().getForumId()))){
+            t.setStatus(stat);
+            return true;
+        }
+        return false;
     }
     
     

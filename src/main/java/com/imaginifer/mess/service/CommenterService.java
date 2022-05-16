@@ -5,12 +5,16 @@
  */
 package com.imaginifer.mess.service;
 
+import com.imaginifer.mess.dto.AccountView;
 import com.imaginifer.mess.dto.CommenterView;
 import com.imaginifer.mess.dto.RegData;
 import com.imaginifer.mess.entity.Commenter;
+import com.imaginifer.mess.entity.MsgCounter;
 import com.imaginifer.mess.entity.Pass;
 import com.imaginifer.mess.enums.UserRank;
 import com.imaginifer.mess.repo.CustomCommenterRepoImpl;
+import com.imaginifer.mess.repo.CustomMsgRepoImpl;
+import com.imaginifer.mess.repo.MutingRepository;
 import com.imaginifer.mess.repo.PassRepository;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -37,16 +41,21 @@ public class CommenterService implements UserDetailsService{
     private final SecurityService ss;
     private final WebUtilService wu;
     private final PassRepository pr;
+    private final CustomMsgRepoImpl mr;
+    private final MutingRepository mur;
     
     @Autowired
     public CommenterService(CustomCommenterRepoImpl ub, PasswordEncoder pwd, 
-            MailingService ms, SecurityService ss, WebUtilService wu, PassRepository pr) {
+            MailingService ms, SecurityService ss, WebUtilService wu, PassRepository pr, 
+            CustomMsgRepoImpl mr, MutingRepository mur) {
         this.cr = ub;
         this.pwd = pwd;
         this.ms = ms;
         this.wu = wu;
         this.ss = ss;
         this.pr = pr;
+        this.mr = mr;
+        this.mur = mur;
     }
     
     @Override
@@ -138,6 +147,33 @@ public class CommenterService implements UserDetailsService{
         c.setEnabled(!c.isEnabled());
         return true;
     }
+    
+    public AccountView showAccountInfo(long id){
+        Commenter c = wu.getCurrentUser();
+        UserRank[] ranks = {UserRank.ROLE_DIRECTOR, UserRank.ROLE_SUBJECTOR, UserRank.ROLE_ARBITRATOR};
+        if(c != null && c.getCommenterId() == id || wu.hasRank(c, ranks)){
+            if (c.getCommenterId() != id){
+                c = cr.findCommenterById(id);
+            }
+            List<MsgCounter> activity = mr.getMessageCounters(id);
+            AccountView view = new AccountView(c.getMail(), 
+                    ControllerSupport.customFormattedDate(c.getJoinDate()), 
+                    ControllerSupport.customFormattedDate(c.getResetDate()), 
+                    ControllerSupport.customFormattedDate(activity.get(0).getLastPost()), 
+                    c.getUsername(), 
+                    wu.highestRank(c).toString().substring(6), 
+                    wu.commenterStatus(c), 
+                    ControllerSupport.convertMuting(mur.findAllMutingsByCommenterId(id)), 
+                    ControllerSupport.convertSanctions(c.getSanctions(), true),
+                    ControllerSupport.convertSanctions(c.getSanctions(), false),
+                    ControllerSupport.convertActivity(activity), 
+                    c.getCommenterId());
+            return view;
+        } 
+        return null;
+    }
+    
+    
     
     
 }

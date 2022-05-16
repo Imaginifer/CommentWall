@@ -36,6 +36,7 @@ public class MainCtrl {
     @RequestMapping(value = "/messaging/res", method = RequestMethod.GET)
     public String displayMsg(@RequestParam(name = "ord", defaultValue = "0") int order,
              @RequestParam(name = "ct", defaultValue = "0") int count,
+             @RequestParam(name = "opt", defaultValue = "0") int txtOption,
              @RequestParam(name = "nm", defaultValue = "") String name,
              @RequestParam(name = "tx", defaultValue = "") String text,
              @RequestParam(name = "ttl", defaultValue = "") String title,
@@ -43,7 +44,7 @@ public class MainCtrl {
              @RequestParam(name = "only", defaultValue = "") String only,
              Model mod) {
 
-        mod.addAttribute("messages", msg.getMsg(order, count, name, text, title, 
+        mod.addAttribute("messages", msg.getMsg(order, count, txtOption, name, text, title, 
                 topic, only));
         mod.addAttribute("cim", new PageView("Találatok"));
         return "front.html";
