@@ -5,6 +5,7 @@
  */
 package com.imaginifer.mess.dto;
 
+import com.imaginifer.mess.service.SettingsDetail;
 import java.util.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -17,6 +18,7 @@ public class MessageData {
     
     @NotNull(message="Több betű kell!")
     @Size(min=1, message="Több betű kell!")
+    @Size(max=SettingsDetail.CHAR_LIMIT, message="Túl hosszú!")
     private String text;
     private List<String> topics=new ArrayList<>();
     private long chosenTopic;

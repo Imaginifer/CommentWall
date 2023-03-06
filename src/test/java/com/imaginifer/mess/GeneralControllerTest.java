@@ -49,7 +49,8 @@ public class GeneralControllerTest {
                 , Mockito.anyString()
                 , Mockito.anyLong()
                 , Mockito.anyString()))     
-                .thenReturn(msgReturn);     
+                .thenReturn(msgReturn); 
+        Mockito.when(msg.getTopic(Mockito.anyLong())).thenReturn(msgReturn);
         List<MessageView> msgReturn2 = new ArrayList<>();
         msgReturn2.add(new MessageView("Commenter1", "Test message no.1", "2008.11.27 23:06:54", "aaa", 5, "I", false, "tests", 1, "", 0));
         Mockito.when(msg.pickMsg(Mockito.anyLong(), Mockito.anyBoolean()))
@@ -64,7 +65,7 @@ public class GeneralControllerTest {
     @Test
     public void testDisplayTopics1() throws Exception{
          mockmvc.perform(MockMvcRequestBuilders.get("/messaging"))
-                .andExpect(MockMvcResultMatchers.view().name("topics.html"));
+                .andExpect(MockMvcResultMatchers.view().name("front.html"));
     }
     
     @Test
@@ -74,7 +75,7 @@ public class GeneralControllerTest {
                 .andExpect(MockMvcResultMatchers.model().attributeExists("topics"))
                 .andExpect(MockMvcResultMatchers.model().attribute("topics", Matchers.hasSize(1)))
                 .andExpect(MockMvcResultMatchers.model().attribute("topics", Matchers
-                        .hasItem(Matchers.allOf(Matchers.hasProperty("author", Matchers.is("Commenter1")), 
+                        .hasItem(Matchers.allOf(Matchers.hasProperty("text", Matchers.is("Commenter1")), 
                                 Matchers.hasProperty("title", Matchers.is("tests"))))));
     }
     

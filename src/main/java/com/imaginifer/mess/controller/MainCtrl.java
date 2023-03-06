@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
@@ -144,6 +145,10 @@ public class MainCtrl {
         return "msg.html";
     }
     
+    @RequestMapping("/messaging/imagesavetest")
+    public String imageUploadTest(MultipartFile img){
+        return msg.imageUploadTest(img);
+    }
     
 
 }

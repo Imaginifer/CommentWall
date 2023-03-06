@@ -271,6 +271,7 @@ public class MsgServiceImpl {
         }
     }
     
+    @Transactional(readOnly = false)
     private boolean processImage (MultipartFile img, Message body, boolean spoilered) throws IOException{
         
         if(img == null || img.getSize() > (SettingsDetail.MEDIA_MB_LIMIT*1024*1024)){
@@ -315,6 +316,16 @@ public class MsgServiceImpl {
         BufferedImage bi = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_BYTE_GRAY);
         bi.getGraphics().drawImage(x, 0, 0, null);
         return bi; 
+    }
+    
+    public String imageUploadTest(MultipartFile img){
+        Message m = msgrepo.getMessageById(1);
+        try{
+            processImage(img, m, false);
+        } catch (IOException e) {
+            return e.getMessage();
+        }
+        return "Sikeres feltöltés!";
     }
     
 }
